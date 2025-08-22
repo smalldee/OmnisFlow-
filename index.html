@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nahrazujeme Internet - Průzkum alternativ</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="container">
+                <div class="header-content">
+                    <h1>Nahrazujeme Internet</h1>
+                    <p>Objevte technologie budoucnosti pro decentralizovaný web</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="nav">
+            <div class="container">
+                <div class="nav-content">
+                    <button class="nav-btn active" data-section="overview">Přehled</button>
+                    <button class="nav-btn" data-section="technologies">Technologie</button>
+                    <button class="nav-btn" data-section="comparison">Srovnání</button>
+                    <button class="nav-btn" data-section="charts">Grafy</button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main">
+            <div class="container">
+                <!-- Overview Section -->
+                <section id="overview" class="section active">
+                    <div class="overview-content">
+                        <div class="problems-section">
+                            <h2>Problémy současného internetu</h2>
+                            <div class="problems-grid">
+                                <div class="problem-card">
+                                    <h3>Centralizace a kontrola</h3>
+                                    <p>Koncentrace moci v rukou několika velkých společností</p>
+                                    <span class="impact-badge impact-high">Vysoký dopad</span>
+                                </div>
+                                <div class="problem-card">
+                                    <h3>Soukromí a bezpečnost</h3>
+                                    <p>Nedostatečná ochrana osobních dat a soukromí</p>
+                                    <span class="impact-badge impact-high">Vysoký dopad</span>
+                                </div>
+                                <div class="problem-card">
+                                    <h3>Škálovatelnost</h3>
+                                    <p>Omezení při rostoucí zátěži a počtu uživatelů</p>
+                                    <span class="impact-badge impact-medium">Střední dopad</span>
+                                </div>
+                                <div class="problem-card">
+                                    <h3>Cenzura</h3>
+                                    <p>Možnost blokování nebo kontroly obsahu</p>
+                                    <span class="impact-badge impact-medium">Střední dopad</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="architecture-comparison">
+                            <h2>Centralizovaná vs. Decentralizovaná architektura</h2>
+                            <img src="https://user-gen-media-assets.s3.amazonaws.com/gpt4o_images/ec90faf0-647d-45d9-9076-c675bdfe69bd.png" alt="Porovnání centralizované a decentralizované síťové architektury" class="architecture-img">
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Technologies Section -->
+                <section id="technologies" class="section">
+                    <div class="technologies-header">
+                        <h2>Technologie nahrazující internet</h2>
+                        <div class="controls">
+                            <input type="text" id="search-input" class="form-control" placeholder="Hledat technologie...">
+                            <select id="category-filter" class="form-control">
+                                <option value="">Všechny kategorie</option>
+                                <option value="Decentralized">Decentralizované</option>
+                                <option value="Infrastructure">Infrastruktura</option>
+                                <option value="Futuristic">Futuristické</option>
+                                <option value="Wireless">Bezdrátové</option>
+                                <option value="Experimental">Experimentální</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="technologies-grid" id="technologies-grid">
+                        <!-- Technology cards will be populated by JavaScript -->
+                    </div>
+                </section>
+
+                <!-- Comparison Section -->
+                <section id="comparison" class="section">
+                    <div class="comparison-header">
+                        <h2>Srovnání technologií</h2>
+                        <p>Vyberte technologie pro porovnání (můžete také označit v sekci Technologie):</p>
+                    </div>
+                    
+                    <div class="comparison-content">
+                        <div class="comparison-selector">
+                            <h3>Výběr technologií</h3>
+                            <div class="comparison-checkboxes" id="comparison-checkboxes">
+                                <!-- Checkboxes will be populated by JavaScript -->
+                            </div>
+                        </div>
+                        
+                        <div class="comparison-results">
+                            <h3>Srovnávací tabulka</h3>
+                            <div class="comparison-table-container">
+                                <table class="comparison-table" id="comparison-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Charakteristika</th>
+                                            <th>Vyberte technologie pro srovnání</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td colspan="2">Zaškrtněte technologie výše nebo v sekci "Technologie" pro jejich srovnání.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Charts Section -->
+                <section id="charts" class="section">
+                    <h2>Vizualizace dat</h2>
+                    <div class="charts-grid">
+                        <div class="chart-card">
+                            <h3>Srovnání technologií</h3>
+                            <img src="https://ppl-ai-code-interpreter-files.s3.amazonaws.com/web/direct-files/01f148557e02bee49e771a9155730c8b/18e9e37b-170e-47b4-8122-34ca435616c9/b42841c0.png" alt="Srovnání technologií nahrazujících internet" class="chart-img">
+                        </div>
+                        
+                        <div class="chart-card">
+                            <h3>Časová osa vývoje</h3>
+                            <img src="https://ppl-ai-code-interpreter-files.s3.amazonaws.com/web/direct-files/01f148557e02bee49e771a9155730c8b/be49b922-3312-4b69-9cab-d91b6b062fff/6aadc602.png" alt="Vývoj síťových technologií v čase" class="chart-img">
+                        </div>
+                        
+                        <div class="chart-card">
+                            <h3>Radarové srovnání</h3>
+                            <img src="https://ppl-ai-code-interpreter-files.s3.amazonaws.com/web/direct-files/01f148557e02bee49e771a9155730c8b/48c80848-3210-4bce-b08d-a227a27f67c5/fb41c710.png" alt="Multidimenzionální srovnání technologií" class="chart-img">
+                        </div>
+                        
+                        <div class="chart-card">
+                            <h3>Problémy internetu</h3>
+                            <img src="https://ppl-ai-code-interpreter-files.s3.amazonaws.com/web/direct-files/01f148557e02bee49e771a9155730c8b/baa36333-cd39-4f1e-b984-12e74e0fdd2d/21aa2e08.png" alt="Hlavní problémy současného internetu" class="chart-img">
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <!-- Technology Detail Modal -->
+        <div class="modal" id="tech-modal">
+            <div class="modal-content">
+                <span class="modal-close" id="modal-close">&times;</span>
+                <div class="modal-body" id="modal-body">
+                    <!-- Modal content will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

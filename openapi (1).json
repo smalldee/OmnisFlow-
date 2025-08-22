@@ -1,0 +1,4671 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Genymotion SaaS Public HTTP API",
+    "description": "Genymotion SaaS user documentation can be found at [docs.genymotion.com/saas](https://docs.genymotion.com/saas).\n\nThis HTTP API allows you to manage Genymotion SaaS virtual devices.\n\nThere are 3 main concepts in this API. All of them must be understood in order to able to use the it efficiently.\n\nThe first concept is **Authentication**.\nAn API token or JWT (JSON Web Token) must be used to authenticate the API calls.\nThe authentication endpoint itself does not accept an API token or JWT. In the Genymotion SaaS Public HTTP API, all\nendpoints other than the authentication endpoint accept either API token or JWT authentication.\n\nFor endpoints requiring authentication, exactly one of the API token or the JWT must be provided.\nIf neither are provided, the API call will return a 401 Unauthorized HTTP error.\nIf both are provided, the API call will return a 400 Bad Request HTTP error.\n\n\nThe details of each authentication scheme are provided below, in [Authentication](#section/Authentication).\n\nThe second concept is the **Recipe**. A Recipe is what is needed to cook an Instance. This Recipe contains the information\nabout the Android system, the virtual device characteristics, and some contextual data. Genymobile provides a\nvariety of default Recipes, but you can create and share new ones from either the [Genymotion SaaS Portal](https://cloud.geny.io) or\nfrom the [Genymotion Desktop software](https://www.genymotion.com/desktop/) (license required).\n\nThe third concept is the **Instance**. An Instance represents a Genymotion Virtual Device running in the Cloud. Built using\nthe information contained in a Recipe, an Instance can be accessed using a wide variety of tools. The current API\nallows you to start and stop *disposable* Instances. A disposable Instance will always be recreated from the Recipe\nwhen a start request is sent. When a stop request is sent, the virtual device Instance will be destroyed, and any\nmodifications done inside it during the run time will be lost.\n",
+    "version": "2.0.0",
+    "contact": {
+      "name": "Genymotion SaaS Team",
+      "url": "https://cloud.geny.io/",
+      "email": "genymotion-cloud@genymobile.com"
+    },
+    "x-logo": {
+      "url": "data:image/png;base64,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"
+    }
+  },
+  "paths": {
+    "/v1/users/login": {
+      "post": {
+        "tags": [
+          "Users v1"
+        ],
+        "summary": "Authenticate User\n",
+        "description": "Authenticate a User, and retreive a new valid JWT.\nThis JWT must be provided to all other API calls in order to identify and authenticate the User executing the request.\n\nOnce logged in, simply add the `Authorization` HTTP header to all subsequents API calls.\n`Authorization` HTTP header value must have the following format: `Bearer <JWT>`.\n\nA JWT *will* expire after some time. The default validity duration is 48 hours.\nIt is recommended to generate a new one before running a new set of API calls.\nGenerating a new JWT will not invalidate previously generated JWTs.\n",
+        "operationId": "login",
+        "x-swagger-router-controller": "users.controller",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginPayload"
+              }
+            }
+          },
+          "description": "Data used to log User",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "User profile and JWT",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginSuccess"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "The email/password combination is incorrect.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/GenericError"
+                    }
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "BAD_USERNAME_PASSWORD"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "User is not enabled.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/GenericError"
+                    }
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "USER_NOT_ENABLED"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Cannot log in user.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/GenericError"
+                    }
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "LOGIN_FAILURE"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "Shell",
+            "source": "curl -H 'Content-Type: application/json;charset=utf-8' --data '{\"email\":\"user-email@company.com\", \"password\": \"P4$$w0rd!\"}' https://api.geny.io/cloud/v1/users/login\n"
+          },
+          {
+            "lang": "Python",
+            "source": "import requests\n\nrequests.post(\n    'https://api.geny.io/cloud/v1/users/login',\n    json={\n        'email': 'user-email@company.com',\n        'password': 'P4$$w0rd!'\n    }\n)\n"
+          }
+        ]
+      }
+    },
+    "/v1/recipes": {
+      "get": {
+        "tags": [
+          "Recipes v1"
+        ],
+        "summary": "List Recipes (deprecated)\n",
+        "deprecated": true,
+        "description": "**This route is deprecated and will be removed in a future release.**\n\nTo avoid any service disruption, it is **mandatory** to migrate your calls to the new [List Recipe v3](#operation/listRecipesV3) route.\n\nList all ready Recipes available for the authenticated User.\nThis endpoint returns 3 lists of Recipes:\n- Bases Recipes, the default Recipes, provided by Genymobile and always available to all Users\n- User Recipes, Recipes shared to any other User by the currently authenticated User\n- Shared Recipes, Recipes shared by any other User to the currently authenticated User\n",
+        "operationId": "listRecipes",
+        "x-swagger-router-controller": "recipes.controller",
+        "security": [
+          {
+            "ApiToken": []
+          },
+          {
+            "Bearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of Recipes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListRecipesSuccess"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Cannot list recipes.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/GenericError"
+                    }
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "CANT_LIST_RECIPES"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "Shell",
+            "source": "curl -H 'Content-Type: application/json;charset=utf-8' -H 'x-api-token: <token>' https://api.geny.io/cloud/v1/recipes\n"
+          },
+          {
+            "lang": "Python",
+            "source": "import requests\n\nrequests.get(\n    'https://api.geny.io/cloud/v1/recipes',\n    headers={\n        'x-api-token': '<token>'\n    }\n)\n"
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Recipes v1"
+        ],
+        "summary": "Create a new recipe",
+        "description": "This endpoint creates a new recipe from the input parameters.\n",
+        "x-guest-protected": true,
+        "x-swagger-router-controller": "recipes",
+        "security": [
+          {
+            "ApiToken": []
+          },
+          {
+            "Bearer": []
+          }
+        ],
+        "operationId": "createRecipeV1",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublicCreateRecipePayload"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "The created recipe.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicPatternsRecipe"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Wrong parameters.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Service Failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericError"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "Shell",
+            "source": "curl -H 'Content-Type: application/json;charset=utf-8' -H 'x-api-token: <token>' --data '{ \"hardware_profile_uuid\": \"<HWP_PROFILE_UUID>\", \"os_image_uuid\": \"<OS_IMAGE_UUID>\", \"parent_recipe_uuid\": \"<PARENT_RECIPE_UUID>\", \"name\": \"The recipe name\", \"description\": \"A description of this recipe\"}' https://api.geny.io/cloud/v1/recipes\n"
+          },
+          {
+            "lang": "Python",
+            "source": "import requests\n\nrequests.post(\n    'https://api.geny.io/cloud/v1/recipes',\n    json={\n        \"hardware_profile_uuid\": \"<HWP_PROFILE_UUID>\",\n        \"os_image_uuid\": \"<OS_IMAGE_UUID>\",\n        \"parent_recipe_uuid\": \"<PARENT_RECIPE_UUID>\",\n        \"name\": \"The recipe name\",\n        \"description\": \"A description of this recipe\"\n    },\n    headers={\n        'x-api-token': '<token>'\n    }\n)\n"
+          }
+        ]
+      }
+    },
+    "/v2/recipes": {
+      "get": {
+        "tags": [
+          "Recipes v2"
+        ],
+        "summary": "List Recipes (paginated) (deprecated)\n",
+        "deprecated": true,
+        "description": "**This route is deprecated and will be removed in a future release.**\n\nTo avoid any service disruption, it is **mandatory** to migrate your calls to the new [List Recipe v3](#operation/listRecipesV3) route.\n\nList all Recipes available for the authenticated User.\n\nThis endpoint returns a paginated list of all Recipes.\n",
+        "operationId": "list",
+        "x-swagger-router-controller": "recipes",
+        "security": [
+          {
+            "ApiToken": []
+          },
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "source",
+            "description": "Filter by Recipe source.\n\nOptions are:\n  * `official`: Recipes provided by Genymotion, available to everyone\n  * `owner`: Recipes created by authenticated User\n  * `sharee`: Recipes shared to authenticated User or their Organization\n  * `shared`: combination of `owner` & `sharee`\n  * `all`: combination of `official` & `shared`\n",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "official",
+                "owner",
+                "sharee",
+                "shared"
+              ],
+              "default": "all"
+            }
+          },
+          {
+            "name": "status",
+            "description": "Filter by Recipe status.\n\nOptions are:\n  * `ready`: Recipes you can use to start an Instance with\n  * `updating`: Recipes currently being updating (cannot be used to start an Instance yet)\n  * `all`: combination of `ready` & `updating`\n",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "ready",
+                "updating"
+              ],
+              "default": "all"
+            }
+          },
+          {
+            "name": "type",
+            "description": "Filter by Recipe type.\n\nOptions are:\n  * `system`: Recipes based on a full-fledged system\n  * `app`: Recipes based on an Android application (APK)\n  * `all`: combination of `system` & `app`\n",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "system",
+                "app",
+                "all"
+              ],
+              "default": "system"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated list of Recipes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedRecipesList"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Cannot list recipes.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/GenericError"
+                    }
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "CANT_LIST_RECIPES"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "Shell",
+            "source": "curl -H 'Content-Type: application/json;charset=utf-8' -H 'x-api-token: <token>' https://api.geny.io/cloud/v2/recipes\n"
+          },
+          {
+            "lang": "Python",
+            "source": "import requests\n\nrecipes = []\nendpoint = 'https://api.geny.io/cloud/v2/recipes'\nwhile True:\n  response = requests.get(endpoint, headers={\n    'x-api-token': '<token>'\n  })\n  recipes += response.get('results')\n\n  endpoint = response.get('next')\n  if not endpoint:\n    break\n"
+          }
+        ]
+      }
+    },
+    "/v3/recipes/": {
+      "get": {
+        "tags": [
+          "Recipes v3"
+        ],
+        "summary": "List Recipes",
+        "description": "List all is official Recipes and Recipes of the current user.\n",
+        "x-swagger-router-controller": "recipes",
+        "security": [
+          {
+            "ApiToken": []
+          },
+          {
+            "Bearer": []
+          }
+        ],
+        "operationId": "listRecipesV3",
+        "parameters": [
+          {
+            "name": "source",
+            "in": "query",
+            "description": "Filter by Recipe source.\nOptions are:\n  * `official`: Recipes provided by Genymotion, available to everyone\n  * `shared`: combination of recipes :\n    - created by the authenticated User\n    - shared to authenticated User or their Organization\n  * `all`: combination of `official` & `shared`\n",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "official",
+                "shared"
+              ],
+              "default": "all"
+            }
+          },
+          {
+            "name": "arch",
+            "in": "query",
+            "description": "Filter by the architecture of the related image.\n\nIf this isn't specified, `x86` and `x86_64` will be used by default.\n",
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "x86",
+                  "x86_64",
+                  "arm64"
+                ]
+              },
+              "default": [
+                "x86_64",
+                "x86"
+              ]
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Search term to search on name or uuid attributes.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page to fetch",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "description": "Number of recipes per page",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 30
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list containing all official and related to the user recipes.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicPatternsRecipesList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Service Failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericError"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "Shell",
+            "source": "curl -H 'Content-Type: application/json;charset=utf-8' -H 'x-api-token: <token>' https://api.geny.io/cloud/v3/recipes/\n"
+          },
+          {
+            "lang": "Python",
+            "source": "import requests\n\nrequests.get('https://api.geny.io/cloud/v3/recipes/', headers={\n    'x-api-token': '<token>'\n})\n"
+          }
+        ]
+      }
+    },
+    "/v1/recipes/{uuid}": {
+      "delete": {
+        "tags": [
+          "Recipes v1"
+        ],
+        "summary": "Delete Recipe identified by its uuid",
+        "x-guest-protected": true,
+        "x-permission": "x-patterns-recipe-owner",
+        "x-swagger-router-controller": "recipes",
+        "security": [
+          {
+            "ApiToken": []
+          },
+          {
+            "Bearer": []
+          }
+        ],
+        "operationId": "deleteRecipeV1",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "description": "Uuid of the recipe to retrieve",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublicDeleteRecipePayload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Recipe is successfully removed."
+          },
+          "400": {
+            "description": "Wrong parameters.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The user is not allowed to delete this recipe.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Recipe not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Service Failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericError"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "Shell",
+            "source": "curl -H 'Content-Type: application/json;charset=utf-8' -H 'x-api-token: <token>' --data '{\"delete_hardware_profile\": false, \"delete_os_image\": false}' -X \"DELETE\" https://api.geny.io/cloud/v1/recipes/<UUID>\n"
+          },
+          {
+            "lang": "Python",
+            "source": "import requests\n\nrequests.delete(\n    'https://api.geny.io/cloud/v1/recipes/<UUID>',\n    json={\n        \"delete_hardware_profile\": false,\n        \"delete_os_image\": false\n    }\n    headers={\n        'x-api-token': '<token>'\n    }\n)\n"
+          }
+        ]
+      }
+    },
+    "/v1/recipes/{uuid}/start-disposable": {
+      "post": {
+        "tags": [
+          "Instances v1"
+        ],
+        "summary": "Start disposable Instance\n",
+        "description": "Start a new disposable Instance from the given Recipe identified by its Uuid.\n\nThe Instance is disposable, meaning that all changes done inside it will be lost after\nthe Instance is stopped.\n\nThe state of the Instance returned by this call will always be CREATING.\n",
+        "operationId": "startDisposable",
+        "x-swagger-router-controller": "recipes.controller",
+        "x-permission": "x-patterns-recipe-owner-or-is-official-or-sharee",
+        "security": [
+          {
+            "ApiToken": []
+          },
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UuidParam"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartDisposableInstancePayload"
+              }
+            }
+          },
+          "description": "Data used to start new disposable Instance",
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "The creating Instance",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicInstanceWithOwnerAndRecipe"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "An instance with the same name already exist for user.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/GenericError"
+                    }
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "INSTANCE_ALREADY_EXISTS"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not allowed to start an instance.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/GenericError"
+                    }
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "TOO_MANY_RUNNING_VDS",
+                        "GROUP_ALLOCATION_REACHED",
+                        "LICENSE_EXPIRED",
+                        "INVALID_LICENSE"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The given recipe cannot be found, or no slots are available on the platform.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/GenericError"
+                    }
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "RECIPE_NOT_FOUND",
+                        "NO_SLOT_AVAILABLE"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Cannot start disposable instance.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/GenericError"
+                    }
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "START_DISPOSABLE_FAILURE"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "Shell",
+            "source": "curl -H 'Content-Type: application/json;charset=utf-8' -H 'x-api-token: <token>' --data '{\"instance_name\":\"MyInstance007\"}' https://api.geny.io/cloud/v1/recipes/<UUID>/start-disposable\n"
+          },
+          {
+            "lang": "Python",
+            "source": "import requests\n\nrequests.post(\n    'https://api.geny.io/cloud/v1/recipes/<UUID>/start-disposable',\n    json={\n        'instance_name': 'MyInstance007'\n    },\n    headers={\n        'x-api-token': '<token>'\n    }\n)\n"
+          }
+        ]
+      }
+    },
+    "/v1/instances": {
+      "get": {
+        "tags": [
+          "Instances v1"
+        ],
+        "summary": "List Instances (deprecated)\n",
+        "description": "**This route is deprecated and will be removed in a future release.**\n\nTo avoid any service disruption, it is **mandatory** to migrate your calls to the new [List Instances v2](#operation/listInstances) route.\n\nList all currently available Instances for the authenticated User.\nThis endpoint is deprecated. /v2/instances should be used instead.\n",
+        "deprecated": true,
+        "operationId": "legacyListInstances",
+        "x-swagger-router-controller": "instance.controller",
+        "security": [
+          {
+            "ApiToken": []
+          },
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "format",
+            "in": "query",
+            "description": "Deprecated.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "template",
+                "recipe"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of Instances",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListInstancesSuccess"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Cannot list instances.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/GenericError"
+                    }
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "CANT_LIST_INSTANCES"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "Shell",
+            "source": "curl -H 'Content-Type: application/json;charset=utf-8' -H 'x-api-token: <token>' https://api.geny.io/cloud/v1/instances\n"
+          },
+          {
+            "lang": "Python",
+            "source": "import requests\n\nrequests.get(\n    'https://api.geny.io/cloud/v1/instances',\n    headers={\n        'x-api-token': '<token>'\n    }\n)\n"
+          }
+        ]
+      }
+    },
+    "/v1/instances/access-token": {
+      "post": {
+        "tags": [
+          "Instances v1"
+        ],
+        "summary": "Get a token to connect to an instance.",
+        "description": "Returns a token to be used for connecting to an instance.\n",
+        "security": [
+          {
+            "ApiToken": []
+          },
+          {
+            "Bearer": []
+          }
+        ],
+        "x-swagger-router-controller": "instance.controller",
+        "operationId": "accessToken",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublicInstanceAccessTokenPayload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Instance access token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InstanceAccessToken"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "An unknown error occurred",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v2/instances": {
+      "get": {
+        "tags": [
+          "Instances v2"
+        ],
+        "summary": "List Instances\n",
+        "description": "List all currently available Instances for the authenticated User.\n\nThe following sortable fields are available:\n- name (Instance name)\n- created_at (Instance creation datetime)\n- updated_at (Instance update datetime)\n- owner (Uuid of the Instance owner)\n- state (Instance state)\n\nThis endpoint is paginated.\n",
+        "operationId": "listInstances",
+        "x-swagger-router-controller": "instances",
+        "security": [
+          {
+            "ApiToken": []
+          },
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/OrderingOA2"
+          },
+          {
+            "$ref": "#/components/parameters/PageOA2"
+          },
+          {
+            "$ref": "#/components/parameters/PageSizeOA2"
+          },
+          {
+            "name": "organization_uuid",
+            "in": "query",
+            "description": "Uuid of the organization. Only an organization manager can use this filter.",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "description": "Instance state to filter",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of Instances",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedInstancesList"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not allowed to list organization's instances",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/GenericError"
+                    }
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "CANT_LIST_ORGANIZATION_INSTANCES"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Cannot list instances.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/GenericError"
+                    }
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "CANT_LIST_INSTANCES"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "Shell",
+            "source": "curl -H 'Content-Type: application/json;charset=utf-8' -H 'x-api-token: <token>' 'https://api.geny.io/cloud/v2/instances?state=BOOTING&state=ONLINE&ordering=created_at'\n"
+          },
+          {
+            "lang": "Python",
+            "source": "import requests\n\nrequests.get(\n    'https://api.geny.io/cloud/v2/instances?state=BOOTING&state=ONLINE&ordering=created_at',\n    headers={\n        'x-api-token': '<token>'\n    }\n)\n"
+          }
+        ]
+      }
+    },
+    "/v1/instances/{uuid}": {
+      "get": {
+        "tags": [
+          "Instances v1"
+        ],
+        "summary": "Get Instance\n",
+        "description": "Retrieve an Instance identified by its Uuid.\n",
+        "operationId": "getInstance",
+        "x-swagger-router-controller": "instance.controller",
+        "x-permission": "x-instance-owner-or-orga-manager",
+        "security": [
+          {
+            "ApiToken": []
+          },
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UuidParam"
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "description": "Deprecated.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "recipe",
+                "template"
+              ],
+              "default": "recipe"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The Instance",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicInstanceWithOwnerAndRecipe"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Instance does not exit.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/GenericError"
+                    }
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "NOT_FOUND_INSTANCE"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Cannot get instance information.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/GenericError"
+                    }
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "CANT_GET_INSTANCE"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "Shell",
+            "source": "curl -H 'Content-Type: application/json;charset=utf-8' -H 'x-api-token: <token>' https://api.geny.io/cloud/v1/instances/<UUID>\n"
+          },
+          {
+            "lang": "Python",
+            "source": "import requests\n\nrequests.get('https://api.geny.io/cloud/v1/instances/<UUID>', headers={\n    'x-api-token': '<token>'\n})\n"
+          }
+        ]
+      }
+    },
+    "/v1/instances/{uuid}/stop-disposable": {
+      "post": {
+        "tags": [
+          "Instances v1"
+        ],
+        "summary": "Stop disposable Instance\n",
+        "description": "Stop the given disposable Instance identified by its Uuid.\n\nThe Instance will automatically be destroyed right after it has been stopped.\n\nThe state of the Instance returned by this call will always be STOPPING, unless it was already in SAVING or DELETING state.\nIn this case, the call will succeed but the instance will continue its end-of-life cycle.\n",
+        "x-permission": "x-instance-owner-or-orga-manager",
+        "x-swagger-router-controller": "instance.controller",
+        "operationId": "stopDisposable",
+        "security": [
+          {
+            "ApiToken": []
+          },
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UuidParam"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The stopping Instance",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicInstanceWithOwnerAndRecipe"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Instance does not exit",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/GenericError"
+                    }
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "NOT_FOUND_INSTANCE"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Cannot stop disposable instance.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/GenericError"
+                    }
+                  ],
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "STOP_DISPOSABLE_FAILURE"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "Shell",
+            "source": "curl -H 'Content-Type: application/json;charset=utf-8' -H 'x-api-token: <token>' --data '{}' https://api.geny.io/cloud/v1/instances/<UUID>/stop-disposable\n"
+          },
+          {
+            "lang": "Python",
+            "source": "import requests\n\nrequests.post('https://api.geny.io/cloud/v1/instances/<UUID>/stop-disposable', json={}, headers={\n    'x-api-token': '<token>'\n})\n"
+          }
+        ]
+      }
+    },
+    "/v1/instances/{uuid}/save": {
+      "post": {
+        "tags": [
+          "Instances v1"
+        ],
+        "summary": "Save a running instance in order to reuse it later",
+        "description": "[STATEFULL] Export running instance data to make it persist over stop\n",
+        "x-swagger-router-controller": "instance.controller",
+        "security": [
+          {
+            "ApiToken": []
+          },
+          {
+            "Bearer": []
+          }
+        ],
+        "x-permission": "x-instance-owner-or-orga-manager",
+        "operationId": "saveRunningInstance",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "description": "UUID of the instance",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublicSaveInstancePayload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "The instance has successfully been saved."
+          },
+          "403": {
+            "description": "The user is not allowed to save an instance.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Instance not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Service Failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericError"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "Shell",
+            "source": "curl -H 'Content-Type: application/json;charset=utf-8' -H 'x-api-token: <token>' --data '{}' https://api.geny.io/cloud/v1/instances/<UUID>/save\n"
+          },
+          {
+            "lang": "Python",
+            "source": "import requests\n\nrequests.post(\n    'https://api.geny.io/cloud/v1/instances/<UUID>/save',\n    json={},\n    headers={\n        'x-api-token': '<token>'\n    }\n)\n"
+          }
+        ]
+      }
+    },
+    "/v1/hardware-profiles/{uuid}": {
+      "get": {
+        "tags": [
+          "Hardware Profile v1"
+        ],
+        "summary": "Retrieve Hardware Profile identified by its uuid",
+        "x-permission": "x-hardware-profile-owner-or-is-official",
+        "x-swagger-router-controller": "hardware-profiles",
+        "security": [
+          {
+            "ApiToken": []
+          },
+          {
+            "Bearer": []
+          }
+        ],
+        "operationId": "getHardwareProfile",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "description": "Uuid of the hardware profile to retrieve",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The requested hardware profile.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicHardwareProfile"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The user is not allowed to request this hardware profile.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Hardware Profile not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Service Failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericError"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "Shell",
+            "source": "curl -H 'Content-Type: application/json;charset=utf-8' -H 'x-api-token: <token>' https://api.geny.io/cloud/v1/hardware-profiles/<UUID>\n"
+          },
+          {
+            "lang": "Python",
+            "source": "import requests\n\nrequests.get(\n    'https://api.geny.io/cloud/v1/hardware-profiles/<UUID>',\n    headers={\n        'x-api-token': '<token>'\n    }\n)\n"
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "Hardware Profile v1"
+        ],
+        "summary": "Delete Hardware Profile identified by its uuid",
+        "x-guest-protected": true,
+        "x-permission": "x-hardware-profile-owner",
+        "x-swagger-router-controller": "hardware-profiles",
+        "security": [
+          {
+            "ApiToken": []
+          },
+          {
+            "Bearer": []
+          }
+        ],
+        "operationId": "deleteHardwareProfile",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "description": "Uuid of the hardware profile to retrieve",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Hardware Profile is successfully removed."
+          },
+          "401": {
+            "description": "Not authorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The user is not allowed to delete this hardware profile.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Hardware Profile not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Service Failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericError"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "Shell",
+            "source": "curl -H 'Content-Type: application/json;charset=utf-8' -H 'x-api-token: <token>' -X \"DELETE\" https://api.geny.io/cloud/v1/hardware-profiles/<UUID>\n"
+          },
+          {
+            "lang": "Python",
+            "source": "import requests\n\nrequests.delete(\n    'https://api.geny.io/cloud/v1/hardware-profiles/<UUID>',\n    headers={\n        'x-api-token': '<token>'\n    }\n)\n"
+          }
+        ]
+      }
+    },
+    "/v1/hardware-profiles/": {
+      "get": {
+        "tags": [
+          "Hardware Profile v1"
+        ],
+        "summary": "List Hardware Profiles",
+        "description": "List all is official Hardware Profiles and Hardware Profiles of the current user.\n",
+        "x-swagger-router-controller": "hardware-profiles",
+        "security": [
+          {
+            "ApiToken": []
+          },
+          {
+            "Bearer": []
+          }
+        ],
+        "x-guest-protected": true,
+        "operationId": "listHardwareProfiles",
+        "parameters": [
+          {
+            "name": "source",
+            "description": "Filter by Hardware Profile source.\nOptions are:\n  * `official`: Hardware Profiles provided by Genymotion, available to everyone\n  * `owner`: Hardware Profiles created by authenticated User\n  * `all`: combination of `official` & `owner`\n",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "official",
+                "owner"
+              ],
+              "default": "all"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Search term to search on name attribute.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page to fetch",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "description": "Number of hardware profiles per page",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 30
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list containing all official and related to the user hardware profiles.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicHardwareProfilesList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Service Failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericError"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "Shell",
+            "source": "curl -H 'Content-Type: application/json;charset=utf-8' -H 'x-api-token: <token>' https://api.geny.io/cloud/v1/hardware-profiles/\n"
+          },
+          {
+            "lang": "Python",
+            "source": "import requests\n\nrequests.get(\n    'https://api.geny.io/cloud/v1/hardware-profiles/',\n    headers={\n        'x-api-token': '<token>'\n    }\n)\n"
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "Hardware Profile v1"
+        ],
+        "summary": "Create a new hardware profile",
+        "description": "This endpoint creates a new hardware profile from the input parameters.\n",
+        "x-guest-protected": true,
+        "x-swagger-router-controller": "hardware-profiles",
+        "security": [
+          {
+            "ApiToken": []
+          },
+          {
+            "Bearer": []
+          }
+        ],
+        "operationId": "createHardwareProfile",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublicCreateHardwareProfilePayload"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "The created hardware profile.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicHardwareProfile"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Wrong parameters.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Service Failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericError"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "Shell",
+            "source": "curl -H 'Content-Type: application/json;charset=utf-8' -H 'x-api-token: <token>' --data '{\"display_settings\": {\"displays\": [{\"width\": 240, \"height\": 240, \"density\": 80, \"physical_size\": 1}], \"hw_navigation_keys\": true}, \"parent_hardware_profile_uuid\": <PARENT_HARDWARE_PROFILE_UUID>, \"name\": \"The hardware profile name\", \"form_factor\": \"PHONE\", \"release_date\": \"2023-08-23\"}' https://api.geny.io/cloud/v1/hardware-profiles/\n"
+          },
+          {
+            "lang": "Python",
+            "source": "import requests\n\nrequests.post(\n    'https://api.geny.io/cloud/v1/hardware-profiles/',\n    json={\n        \"display_settings\": {\n            \"displays\": [\n                  {\n                      \"width\": 240,\n                      \"height\": 240,\n                      \"density\": 80,\n                      \"physical_size\": 1\n                  }\n            ],\n            \"hw_navigation_keys\": true\n        },\n        \"parent_hardware_profile_uuid\": <PARENT_HARDWARE_PROFILE_UUID>,\n        \"name\": \"The hardware profile name\",\n        \"form_factor\": \"PHONE\",\n        \"release_date\": \"2023-08-23\"\n    },\n    headers={\n        'x-api-token': '<token>'\n    }\n)\n"
+          }
+        ]
+      }
+    },
+    "/v1/os-images/{uuid}": {
+      "get": {
+        "tags": [
+          "OS Image v1"
+        ],
+        "summary": "Retrieve OS Image identified by its uuid",
+        "x-permission": "x-os-image-owner-or-is-official",
+        "x-swagger-router-controller": "os-images",
+        "security": [
+          {
+            "ApiToken": []
+          },
+          {
+            "Bearer": []
+          }
+        ],
+        "operationId": "getOsImage",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "description": "Uuid of the OS Image to retrieve",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The requested OS Image.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicRetrieveOsImage"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The user is not allowed to request this OS Image.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "OS Image not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Service Failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericError"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "Shell",
+            "source": "curl -H 'Content-Type: application/json;charset=utf-8' -H 'x-api-token: <token>' https://api.geny.io/cloud/v1/os-images/<UUID>\n"
+          },
+          {
+            "lang": "Python",
+            "source": "import requests\n\nrequests.get(\n    'https://api.geny.io/cloud/v1/os-images/<UUID>',\n    headers={\n        'x-api-token': '<token>'\n    }\n)\n"
+          }
+        ]
+      },
+      "delete": {
+        "tags": [
+          "OS Image v1"
+        ],
+        "summary": "Delete OS Image identified by its uuid",
+        "x-guest-protected": true,
+        "x-permission": "x-os-image-owner",
+        "x-swagger-router-controller": "os-images",
+        "security": [
+          {
+            "ApiToken": []
+          },
+          {
+            "Bearer": []
+          }
+        ],
+        "operationId": "deleteOsImage",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "description": "Uuid of the OS Image to retrieve",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "OS Image is successfully removed."
+          },
+          "400": {
+            "description": "Wrong parameters.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The user is not allowed to delete this Os Image.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "OS Image not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Service Failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericError"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "Shell",
+            "source": "curl -H 'Content-Type: application/json;charset=utf-8' -H 'x-api-token: <token>' -X \"DELETE\" https://api.geny.io/cloud/v1/os-images/<UUID>\n"
+          },
+          {
+            "lang": "Python",
+            "source": "import requests\n\nrequests.delete(\n    'https://api.geny.io/cloud/v1/os-images/<UUID>',\n    headers={\n        'x-api-token': '<token>'\n    }\n)\n"
+          }
+        ]
+      }
+    },
+    "/v1/os-images/": {
+      "get": {
+        "tags": [
+          "OS Image v1"
+        ],
+        "summary": "List OS Images",
+        "description": "List all is official OS Images and OS Images of the current user.\n",
+        "x-swagger-router-controller": "os-images",
+        "security": [
+          {
+            "ApiToken": []
+          },
+          {
+            "Bearer": []
+          }
+        ],
+        "x-guest-protected": true,
+        "operationId": "listOsImages",
+        "parameters": [
+          {
+            "name": "source",
+            "description": "Filter by OS Image source.\nOptions are:\n  * `official`: OS Images provided by Genymotion, available to everyone\n  * `owner`: OS Images created by authenticated User\n  * `all`: combination of `official` & `owner`\n",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "official",
+                "owner"
+              ],
+              "default": "all"
+            }
+          },
+          {
+            "name": "arch",
+            "in": "query",
+            "description": "Filter by the image architecture.\n\nIf this isn't specified, `x86` and `x86_64` will be used by default.\n",
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "x86",
+                  "x86_64",
+                  "arm64"
+                ]
+              },
+              "default": [
+                "x86_64",
+                "x86"
+              ]
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Search term to search on name attribute.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page to fetch",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "description": "Number of os images per page",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 30
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list containing all official and related to the user os images.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicOsImagesList"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Service Failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericError"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "Shell",
+            "source": "curl -H 'Content-Type: application/json;charset=utf-8' -H 'x-api-token: <token>' https://api.geny.io/cloud/v1/os-images/\n"
+          },
+          {
+            "lang": "Python",
+            "source": "import requests\n\nrequests.get(\n    'https://api.geny.io/cloud/v1/os-images/',\n    headers={\n        'x-api-token': '<token>'\n    }\n)\n"
+          }
+        ]
+      }
+    },
+    "/v1/os-images/{uuid}/duplicate/": {
+      "post": {
+        "tags": [
+          "OS Image v1"
+        ],
+        "summary": "Duplicate an OS Image",
+        "description": "This endpoint duplicates an OS Image from the input parameters.\n",
+        "x-guest-protected": true,
+        "x-permission": "x-os-image-owner-or-is-official",
+        "x-swagger-router-controller": "os-images",
+        "security": [
+          {
+            "ApiToken": []
+          },
+          {
+            "Bearer": []
+          }
+        ],
+        "operationId": "duplicateOsImage",
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "description": "Uuid of the OS Image to retrieve",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublicDuplicateOsImagePayload"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "The duplicated OS Image.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicDuplicateUpdateOsImage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Wrong parameters.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Not authorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Service Failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericError"
+                }
+              }
+            }
+          }
+        },
+        "x-codeSamples": [
+          {
+            "lang": "Shell",
+            "source": "curl -H 'Content-Type: application/json;charset=utf-8' -H 'x-api-token: <token>' --data '{\"name\": \"My duplicated os-image name\"}' https://api.geny.io/cloud/v1/os-images/<UUID>/duplicate/\n"
+          },
+          {
+            "lang": "Python",
+            "source": "import requests\n\nrequests.post(\n    'https://api.geny.io/cloud/v1/os-images/<UUID>/duplicate/',\n    json={\n        \"name\": \"My duplicated os-image name\"\n    },\n    headers={\n        'x-api-token': '<token>'\n    }\n)\n"
+          }
+        ]
+      }
+    },
+    "/v1/reporting/usage": {
+      "get": {
+        "tags": [
+          "Reporting v1"
+        ],
+        "summary": "Get usage report per user for the current organization.",
+        "description": "This endpoint allows an organization's manager to get a usage report for the current organization.\n",
+        "x-permission": "x-manager",
+        "x-swagger-router-controller": "reporting.controller",
+        "security": [
+          {
+            "ApiToken": []
+          },
+          {
+            "Bearer": []
+          }
+        ],
+        "operationId": "getUsageReportJson",
+        "parameters": [
+          {
+            "name": "from_date",
+            "in": "query",
+            "description": "Start of the usage period.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "datetime"
+            }
+          },
+          {
+            "name": "to_date",
+            "in": "query",
+            "description": "End of the usage period.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "datetime"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Usage report response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsageReportList"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The requester isn't allowed to access usage reports.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "There was no consumption for the given period.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Service Failed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenericError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.geny.io/cloud"
+    }
+  ],
+  "components": {
+    "parameters": {
+      "UuidParam": {
+        "name": "uuid",
+        "in": "path",
+        "description": "Uuid of the resource",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+        }
+      },
+      "OrderingOA2": {
+        "name": "ordering",
+        "in": "query",
+        "required": false,
+        "description": "Use an orderable field with an optional '+' OR '-' prefix to order in the desired direction",
+        "schema": {
+          "type": "string",
+          "pattern": "^[\\+|\\-]?[,1-9a-zA-Z_\\-]*$"
+        }
+      },
+      "PageOA2": {
+        "name": "page",
+        "in": "query",
+        "required": false,
+        "description": "Page to query",
+        "schema": {
+          "type": "integer"
+        }
+      },
+      "PageSizeOA2": {
+        "name": "page_size",
+        "in": "query",
+        "required": false,
+        "description": "Number of elements per pages",
+        "schema": {
+          "type": "integer"
+        }
+      }
+    },
+    "responses": {
+      "DefaultResponse": {
+        "description": "Something went wrong.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/GenericError"
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "ApiToken": {
+        "type": "apiKey",
+        "description": "`x-api-token` HTTP header, with the api-token as the value.\n\nAPI tokens may be created in the [Genymotion SaaS Portal](https://cloud.geny.io).\n\nProviding an invalid API token will result in a 401 Unauthorized HTTP error.\n\nProviding an API token on an endpoint which does not support API token authentication will result in a 403 Forbidden HTTP error.\n\nProviding both an API token and a JWT Authorization will result in a 400 Bad Request HTTP error.\n",
+        "name": "x-api-token",
+        "in": "header"
+      },
+      "Bearer": {
+        "type": "apiKey",
+        "description": "`Authorization` HTTP header, with `Bearer <JWT>` content format, for authentication mechanism.\n\nUse the [Authenticate User](#operation/login) endpoint to obtain a JWT.\n\nProviding an invalid/expired JWT will result in a 401 Unauthorized HTTP error.\n\nProviding both a JWT Authorization and an API token will result in a 400 Bad Request HTTP error.\n",
+        "name": "Authorization",
+        "in": "header"
+      }
+    },
+    "schemas": {
+      "LoginPayload": {
+        "type": "object",
+        "required": [
+          "email",
+          "password"
+        ],
+        "properties": {
+          "email": {
+            "$ref": "#/components/schemas/Email"
+          },
+          "password": {
+            "type": "string",
+            "description": "User password",
+            "format": "password"
+          }
+        }
+      },
+      "StartDisposableInstancePayload": {
+        "type": "object",
+        "required": [
+          "instance_name"
+        ],
+        "properties": {
+          "instance_name": {
+            "type": "string",
+            "description": "Name of the Instance. This name must be unique per User.\n"
+          },
+          "rename_on_conflict": {
+            "type": "boolean",
+            "description": "In case a virtual device already exist with the same name, allow the Platform to rename the\nInstance with a new, unique, name. New name will look like `instance_name` followed by some\ncharacters generated by the Platform.\n",
+            "default": false
+          },
+          "stop_when_inactive": {
+            "type": "boolean",
+            "description": "DEPRECATED. Use `timeouts.inactivity` instead.\n",
+            "default": false
+          },
+          "automatic_release": {
+            "type": "object",
+            "description": "DEPRECATED. Use `timeouts` instead.\n",
+            "required": [
+              "type"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "default": "none",
+                "enum": [
+                  "none",
+                  "after_inactivity"
+                ]
+              }
+            }
+          },
+          "timeouts": {
+            "type": "object",
+            "example": {},
+            "description": "Various customizable timeouts for the Instance.\n",
+            "properties": {
+              "global": {
+                "type": "integer",
+                "description": "Duration after which the Instance will be stopped, no matter what. The countdown starts when the Instance goes into ONLINE/RUNNING state for the first time.\nOmitting this value will make it use the organization's default global timeout.\nSetting it to 0 will disable the global timeout.\n",
+                "minimum": 0,
+                "maximum": 28800
+              },
+              "inactivity": {
+                "type": "integer",
+                "description": "Duration after which the Instance will be stopped when no connection is done on the webapp.\nOmitting this value will make it use the organization default inactivity timeout.\nSetting it to 0 will disable the inactivity timeout.\n",
+                "minimum": 0,
+                "maximum": 28800
+              }
+            }
+          }
+        }
+      },
+      "PublicSaveInstancePayload": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "description": "Specify if the recipe should be updated in place, or if a new recipe should be created.\n\nSAVE will update the custom recipe. SAVE can only be used if the current user is the owner of the custom recipe.\nIf a the image is official, a new custom image will be created. Otherwise the existing custom image will be updated.\n\nSAVE_AS will create a new custom recipe and a new custom image.\n\nWhen a new custom recipe is created, it will have the name specified by new_recipe_name. If no new_recipe_name\nis specified, the new custom recipe will be named \"Copy of toriginal recipe name)\"\n\nWhen a new custom image is created, it will have the name specified by new_os_image_name. If no new_os_image_name\nis specified, the new custom image will be named \"Copy of (original image name)\"\n",
+            "type": "string",
+            "default": "SAVE_AS",
+            "enum": [
+              "SAVE",
+              "SAVE_AS"
+            ]
+          },
+          "new_recipe_name": {
+            "description": "Name of the new created recipe. Used in case of action=SAVE_AS.",
+            "type": "string"
+          },
+          "new_os_image_name": {
+            "description": "Name of the new created OS Image. Used in case of action=SAVE and current OsImage is official, or if action=SAVE_AS.",
+            "type": "string"
+          }
+        }
+      },
+      "PublicDisplayPayload": {
+        "type": "object",
+        "properties": {
+          "width": {
+            "description": "Display width in px",
+            "minimum": 240,
+            "maximum": 7680,
+            "nullable": true,
+            "type": "integer"
+          },
+          "height": {
+            "description": "Display height in px",
+            "minimum": 240,
+            "maximum": 7680,
+            "nullable": true,
+            "type": "integer"
+          },
+          "density": {
+            "description": "Display density",
+            "minimum": 80,
+            "maximum": 820,
+            "nullable": true,
+            "type": "integer"
+          },
+          "physical_size": {
+            "description": "Display physical_size in inches",
+            "minimum": 1,
+            "maximum": 300,
+            "nullable": true,
+            "type": "number"
+          }
+        }
+      },
+      "PublicDisplaySettingsPayload": {
+        "type": "object",
+        "properties": {
+          "displays": {
+            "description": "List of displays",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicDisplayPayload"
+            }
+          },
+          "hw_navigation_keys": {
+            "description": "Device has navigation keys",
+            "nullable": true,
+            "type": "boolean"
+          }
+        }
+      },
+      "PublicCreateHardwareProfilePayload": {
+        "type": "object",
+        "required": [
+          "display_settings",
+          "name"
+        ],
+        "properties": {
+          "display_settings": {
+            "$ref": "#/components/schemas/PublicDisplaySettingsPayload"
+          },
+          "parent_hardware_profile_uuid": {
+            "$ref": "#/components/schemas/NullableUuidv4"
+          },
+          "name": {
+            "description": "Hardware Profile name",
+            "type": "string"
+          },
+          "form_factor": {
+            "$ref": "#/components/schemas/PublicFormFactor"
+          },
+          "cpu_count": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PublicCpuCount"
+              },
+              {
+                "default": 4
+              }
+            ]
+          },
+          "ram_size": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PublicRamSize"
+              },
+              {
+                "default": 4096
+              }
+            ]
+          },
+          "release_date": {
+            "$ref": "#/components/schemas/NullableShortDate"
+          }
+        }
+      },
+      "PublicDuplicateOsImagePayload": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "description": "OS Image name",
+            "type": "string"
+          }
+        }
+      },
+      "PublicCreateRecipePayload": {
+        "type": "object",
+        "required": [
+          "hardware_profile_uuid",
+          "os_image_uuid",
+          "name"
+        ],
+        "properties": {
+          "hardware_profile_uuid": {
+            "$ref": "#/components/schemas/Uuidv4"
+          },
+          "os_image_uuid": {
+            "$ref": "#/components/schemas/Uuidv4"
+          },
+          "parent_recipe_uuid": {
+            "$ref": "#/components/schemas/NullableUuidv4"
+          },
+          "name": {
+            "description": "Recipe name",
+            "nullable": true,
+            "type": "string"
+          },
+          "description": {
+            "description": "Recipe description",
+            "type": "string"
+          }
+        }
+      },
+      "PublicDeleteRecipePayload": {
+        "type": "object",
+        "properties": {
+          "delete_hardware_profile": {
+            "description": "Define if we delete the recipe hardware profile.",
+            "type": "boolean",
+            "default": false
+          },
+          "delete_os_image": {
+            "description": "Define if we delete the recipe OS image.",
+            "type": "boolean",
+            "default": false
+          }
+        }
+      },
+      "PublicInstanceAccessTokenPayload": {
+        "type": "object",
+        "properties": {
+          "instance_uuid": {
+            "description": "Instance uuid.\n\nThis is required to connect to instances with arm64 architecture.\n",
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "LoginSuccess": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "User JWT. The JWT is required for most of the API calls.\nIt must be passed in the `Authorization` HTTP header, using the format `Bearer <JWT>`.\n"
+          },
+          "user": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PublicFullUser"
+              },
+              {
+                "type": "object",
+                "description": "User information",
+                "properties": {
+                  "organization": {
+                    "$ref": "#/components/schemas/PublicOrganizationWithLicense"
+                  },
+                  "group": {
+                    "description": "Deprecated. Group of the User. Will always be absent.",
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/PublicGroup"
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "InstancesList": {
+        "$ref": "#/components/schemas/ListInstancesSuccess"
+      },
+      "ListRecipesSuccess": {
+        "type": "object",
+        "properties": {
+          "base": {
+            "type": "array",
+            "description": "Widely available Recipes, provided by Genymobile.\n",
+            "items": {
+              "$ref": "#/components/schemas/PublicRecipe"
+            }
+          },
+          "user": {
+            "type": "array",
+            "description": "Recipes shared to collaborators by the authenticated User.\n",
+            "items": {
+              "$ref": "#/components/schemas/PublicRecipe"
+            }
+          },
+          "shared": {
+            "type": "array",
+            "description": "Recipes shared by collaborators to the authenticated User.\n",
+            "items": {
+              "$ref": "#/components/schemas/PublicRecipe"
+            }
+          }
+        }
+      },
+      "PaginatedInstancesList": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ResultSet"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "results": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/PublicInstanceWithOwnerAndRecipe"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "PaginatedRecipesList": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ResultSet"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "results": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/PublicFullRecipe"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "PublicMinimalShare": {
+        "type": "object",
+        "properties": {
+          "uuid": {
+            "description": "Uuid of the share object",
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+          },
+          "sharer_uuid": {
+            "$ref": "#/components/schemas/Uuidv4"
+          },
+          "organization_uuid": {
+            "$ref": "#/components/schemas/Uuidv4"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "dateTime",
+            "description": "Creation date of the share."
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "dateTime",
+            "description": "Last update date of the share."
+          },
+          "organization_recipients_count": {
+            "description": "Count of recipient with organization type.",
+            "type": "integer"
+          },
+          "user_recipients_count": {
+            "description": "Count of user with user type.",
+            "type": "integer"
+          }
+        }
+      },
+      "PublicDisplay": {
+        "type": "object",
+        "properties": {
+          "uuid": {
+            "$ref": "#/components/schemas/Uuidv4"
+          },
+          "display_index": {
+            "description": "Display index",
+            "type": "integer"
+          },
+          "width": {
+            "description": "Display width in px",
+            "type": "integer"
+          },
+          "height": {
+            "description": "Display height in px",
+            "type": "integer"
+          },
+          "density": {
+            "description": "Display density",
+            "type": "integer"
+          },
+          "physical_size": {
+            "description": "Display physical_size in inches",
+            "type": "number"
+          }
+        }
+      },
+      "PublicDisplayMode": {
+        "description": "Display mode",
+        "type": "string",
+        "enum": [
+          "REGULAR"
+        ]
+      },
+      "PublicDisplaySettings": {
+        "type": "object",
+        "properties": {
+          "uuid": {
+            "$ref": "#/components/schemas/Uuidv4"
+          },
+          "displays": {
+            "description": "List of displays",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicDisplay"
+            }
+          },
+          "display_mode": {
+            "$ref": "#/components/schemas/PublicDisplayMode"
+          },
+          "hw_navigation_keys": {
+            "description": "Device has navigation keys",
+            "type": "boolean"
+          }
+        }
+      },
+      "PublicFormFactor": {
+        "description": "Hardware Profile form factor",
+        "type": "string",
+        "enum": [
+          "PHONE",
+          "TABLET"
+        ]
+      },
+      "PublicListHardwareProfile": {
+        "type": "object",
+        "properties": {
+          "uuid": {
+            "$ref": "#/components/schemas/Uuidv4"
+          },
+          "display_settings": {
+            "$ref": "#/components/schemas/PublicDisplaySettings"
+          },
+          "parent_hardware_profile_uuid": {
+            "$ref": "#/components/schemas/Uuidv4"
+          },
+          "name": {
+            "description": "Hardware Profile name",
+            "type": "string"
+          },
+          "is_official": {
+            "description": "If Hardware Profile is an official template",
+            "type": "boolean"
+          },
+          "owner": {
+            "$ref": "#/components/schemas/PublicUserWithOrga"
+          },
+          "form_factor": {
+            "$ref": "#/components/schemas/PublicFormFactor"
+          },
+          "cpu_count": {
+            "description": "Hardware Profile Cpu count",
+            "type": "integer"
+          },
+          "ram_size": {
+            "description": "Hardware Profile RAM size in Mb",
+            "type": "integer"
+          },
+          "data_disk_size": {
+            "description": "Hardware Profile data disk size in Mb",
+            "type": "integer"
+          },
+          "release_date": {
+            "$ref": "#/components/schemas/ShortDate"
+          },
+          "created_at": {
+            "$ref": "#/components/schemas/Date"
+          },
+          "updated_at": {
+            "$ref": "#/components/schemas/Date"
+          }
+        }
+      },
+      "PublicHardwareProfile": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/PublicListHardwareProfile"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "recipe_count": {
+                "description": "Count of recipes using this Hardware Profile",
+                "type": "integer"
+              }
+            }
+          }
+        ]
+      },
+      "PublicHardwareProfilesList": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "description": "Number of total Hardware Profiles results"
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicListHardwareProfile"
+            },
+            "description": "List of Hardware Profiles"
+          }
+        }
+      },
+      "PublicOsVersion": {
+        "type": "object",
+        "required": [
+          "uuid",
+          "name",
+          "os_version",
+          "sdk_version",
+          "release_date"
+        ],
+        "properties": {
+          "uuid": {
+            "$ref": "#/components/schemas/Uuidv4"
+          },
+          "name": {
+            "description": "Os Version name",
+            "type": "string"
+          },
+          "os_version": {
+            "description": "Os Version version",
+            "type": "string"
+          },
+          "sdk_version": {
+            "description": "SDK API level",
+            "type": "string"
+          },
+          "release_date": {
+            "$ref": "#/components/schemas/ShortDate"
+          }
+        }
+      },
+      "PublicOsImageArch": {
+        "type": "string",
+        "description": "The architecture of the image",
+        "enum": [
+          "x86",
+          "x86_64",
+          "arm64"
+        ]
+      },
+      "PublicDuplicateUpdateOsImage": {
+        "type": "object",
+        "required": [
+          "uuid",
+          "os_version",
+          "arch",
+          "parent_os_image_uuid",
+          "supported_form_factors",
+          "name",
+          "is_official",
+          "is_beta",
+          "owner",
+          "status",
+          "image_version",
+          "image_uri",
+          "image_size_bytes",
+          "image_hash",
+          "image_date",
+          "build_date",
+          "created_at",
+          "updated_at",
+          "recipe_count"
+        ],
+        "properties": {
+          "uuid": {
+            "$ref": "#/components/schemas/Uuidv4"
+          },
+          "os_version": {
+            "$ref": "#/components/schemas/PublicOsVersion"
+          },
+          "parent_os_image_uuid": {
+            "$ref": "#/components/schemas/Uuidv4"
+          },
+          "supported_form_factors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicFormFactor"
+            }
+          },
+          "name": {
+            "description": "OS Image name",
+            "type": "string"
+          },
+          "is_official": {
+            "description": "If OsImage is an official template",
+            "type": "boolean"
+          },
+          "is_beta": {
+            "description": "If OsImage is a beta version",
+            "type": "boolean"
+          },
+          "arch": {
+            "$ref": "#/components/schemas/PublicOsImageArch"
+          },
+          "owner": {
+            "$ref": "#/components/schemas/PublicUserWithOrga"
+          },
+          "status": {
+            "description": "OS Image status",
+            "type": "string",
+            "enum": [
+              "CREATING",
+              "READY",
+              "UPDATING",
+              "ERROR"
+            ]
+          },
+          "image_version": {
+            "description": "OS Image image version",
+            "type": "string"
+          },
+          "image_uri": {
+            "description": "OS Image image uri",
+            "type": "string"
+          },
+          "image_size_bytes": {
+            "description": "OS Image image size (bytes)",
+            "type": "integer"
+          },
+          "image_hash": {
+            "description": "OS Image image hash",
+            "type": "string"
+          },
+          "image_date": {
+            "allOf": [
+              {
+                "description": "Date & time at which the ova file was last saved"
+              },
+              {
+                "$ref": "#/components/schemas/Date"
+              }
+            ]
+          },
+          "build_date": {
+            "allOf": [
+              {
+                "description": "Date at which the AOSP image was initially compiled"
+              },
+              {
+                "$ref": "#/components/schemas/ShortDate"
+              }
+            ]
+          },
+          "created_at": {
+            "$ref": "#/components/schemas/Date"
+          },
+          "updated_at": {
+            "$ref": "#/components/schemas/Date"
+          },
+          "recipe_count": {
+            "description": "Count of recipes using this OS Image",
+            "type": "integer"
+          }
+        }
+      },
+      "PublicListOsImage": {
+        "type": "object",
+        "required": [
+          "uuid",
+          "os_version",
+          "arch",
+          "parent_os_image_uuid",
+          "supported_form_factors",
+          "name",
+          "is_official",
+          "is_beta",
+          "status",
+          "image_version",
+          "image_uri",
+          "image_size_bytes",
+          "image_hash",
+          "image_date",
+          "build_date",
+          "created_at",
+          "updated_at"
+        ],
+        "properties": {
+          "uuid": {
+            "$ref": "#/components/schemas/Uuidv4"
+          },
+          "os_version": {
+            "$ref": "#/components/schemas/PublicOsVersion"
+          },
+          "parent_os_image_uuid": {
+            "$ref": "#/components/schemas/Uuidv4"
+          },
+          "supported_form_factors": {
+            "description": "List of supported form factors",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicFormFactor"
+            }
+          },
+          "name": {
+            "description": "OS Image name",
+            "type": "string"
+          },
+          "is_official": {
+            "description": "If OsImage is an official template",
+            "type": "boolean"
+          },
+          "is_beta": {
+            "description": "If OsImage is a beta version",
+            "type": "boolean"
+          },
+          "arch": {
+            "$ref": "#/components/schemas/PublicOsImageArch"
+          },
+          "owner": {
+            "$ref": "#/components/schemas/PublicUserWithOrga"
+          },
+          "status": {
+            "description": "OS Image status",
+            "type": "string",
+            "enum": [
+              "CREATING",
+              "READY",
+              "UPDATING",
+              "ERROR"
+            ]
+          },
+          "image_version": {
+            "description": "OS Image image version",
+            "type": "string"
+          },
+          "image_uri": {
+            "description": "OS Image image uri",
+            "type": "string"
+          },
+          "image_size_bytes": {
+            "description": "OS Image image size (bytes)",
+            "type": "integer"
+          },
+          "image_hash": {
+            "description": "OS Image image hash",
+            "type": "string"
+          },
+          "image_date": {
+            "allOf": [
+              {
+                "description": "Date & time at which the ova file was last saved"
+              },
+              {
+                "$ref": "#/components/schemas/Date"
+              }
+            ]
+          },
+          "build_date": {
+            "allOf": [
+              {
+                "description": "Date at which the AOSP image was initially compiled"
+              },
+              {
+                "$ref": "#/components/schemas/ShortDate"
+              }
+            ]
+          },
+          "created_at": {
+            "$ref": "#/components/schemas/Date"
+          },
+          "updated_at": {
+            "$ref": "#/components/schemas/Date"
+          }
+        }
+      },
+      "PublicRetrieveOsImage": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/PublicListOsImage"
+          },
+          {
+            "type": "object",
+            "required": [
+              "recipe_count"
+            ],
+            "properties": {
+              "recipe_count": {
+                "description": "Count of recipes using this OS Image",
+                "type": "integer"
+              }
+            }
+          }
+        ]
+      },
+      "PublicOsImagesList": {
+        "type": "object",
+        "required": [
+          "count",
+          "results"
+        ],
+        "properties": {
+          "count": {
+            "type": "integer",
+            "description": "Number of total OS Images results"
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicListOsImage"
+            },
+            "description": "List of OS Images"
+          }
+        }
+      },
+      "PublicPatternsRecipe": {
+        "type": "object",
+        "properties": {
+          "parent_recipe_uuid": {
+            "$ref": "#/components/schemas/Uuidv4"
+          },
+          "uuid": {
+            "$ref": "#/components/schemas/Uuidv4"
+          },
+          "hardware_profile": {
+            "type": "object",
+            "required": [
+              "uuid",
+              "name",
+              "form_factor",
+              "is_official",
+              "recipe_count"
+            ],
+            "properties": {
+              "uuid": {
+                "$ref": "#/components/schemas/Uuidv4"
+              },
+              "name": {
+                "description": "Recipe Hardware Profile name",
+                "type": "string"
+              },
+              "form_factor": {
+                "$ref": "#/components/schemas/PublicFormFactor"
+              },
+              "is_official": {
+                "description": "If Hardware Profile is an official template",
+                "type": "boolean"
+              },
+              "recipe_count": {
+                "description": "Count of recipes using this Hardware Profile",
+                "type": "integer"
+              }
+            }
+          },
+          "os_image": {
+            "type": "object",
+            "required": [
+              "uuid",
+              "name",
+              "is_official",
+              "recipe_count"
+            ],
+            "properties": {
+              "uuid": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "name": {
+                "description": "Recipe OS Image name",
+                "type": "string"
+              },
+              "is_official": {
+                "description": "If OsImage is an official template",
+                "type": "boolean"
+              },
+              "recipe_count": {
+                "description": "Count of recipes using this OsImage",
+                "type": "integer"
+              }
+            }
+          },
+          "name": {
+            "description": "Recipe name",
+            "type": "string"
+          },
+          "is_official": {
+            "description": "If Recipe is an official template",
+            "type": "boolean"
+          },
+          "owner": {
+            "$ref": "#/components/schemas/PublicUserWithOrga"
+          },
+          "description": {
+            "description": "Recipe description",
+            "type": "string"
+          },
+          "created_at": {
+            "$ref": "#/components/schemas/Date"
+          },
+          "updated_at": {
+            "$ref": "#/components/schemas/Date"
+          },
+          "status": {
+            "description": "Recipe OS Image status",
+            "type": "string",
+            "enum": [
+              "CREATING",
+              "READY",
+              "UPDATING",
+              "ERROR"
+            ]
+          }
+        }
+      },
+      "PublicPatternsRecipeListResult": {
+        "type": "object",
+        "required": [
+          "uuid",
+          "parent_recipe_uuid",
+          "hardware_profile",
+          "os_image",
+          "name",
+          "is_official",
+          "description",
+          "created_at",
+          "updated_at",
+          "status"
+        ],
+        "properties": {
+          "uuid": {
+            "$ref": "#/components/schemas/Uuidv4"
+          },
+          "parent_recipe_uuid": {
+            "$ref": "#/components/schemas/Uuidv4"
+          },
+          "hardware_profile": {
+            "type": "object",
+            "required": [
+              "uuid",
+              "name",
+              "is_official",
+              "form_factor",
+              "cpu_count",
+              "ram_size",
+              "display_settings"
+            ],
+            "properties": {
+              "uuid": {
+                "$ref": "#/components/schemas/Uuidv4"
+              },
+              "name": {
+                "description": "Recipe Hardware Profile name",
+                "type": "string"
+              },
+              "is_official": {
+                "description": "If Hardware Profile is an official template",
+                "type": "boolean"
+              },
+              "form_factor": {
+                "$ref": "#/components/schemas/PublicFormFactor"
+              },
+              "cpu_count": {
+                "description": "Hardware Profile Cpu count",
+                "type": "integer"
+              },
+              "ram_size": {
+                "description": "Hardware Profile RAM size in Mb",
+                "type": "integer"
+              },
+              "display_settings": {
+                "required": [
+                  "displays",
+                  "hw_navigation_keys"
+                ],
+                "type": "object",
+                "properties": {
+                  "hw_navigation_keys": {
+                    "description": "Device has navigation keys",
+                    "type": "boolean"
+                  },
+                  "displays": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "width",
+                        "height",
+                        "density"
+                      ],
+                      "properties": {
+                        "width": {
+                          "description": "Display width in px",
+                          "type": "integer"
+                        },
+                        "height": {
+                          "description": "Display height in px",
+                          "type": "integer"
+                        },
+                        "density": {
+                          "description": "Display density",
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "os_image": {
+            "type": "object",
+            "required": [
+              "uuid",
+              "name",
+              "arch",
+              "is_official",
+              "is_beta",
+              "os_version"
+            ],
+            "properties": {
+              "uuid": {
+                "$ref": "#/components/schemas/Uuidv4"
+              },
+              "name": {
+                "description": "Recipe OS Image name",
+                "type": "string"
+              },
+              "arch": {
+                "$ref": "#/components/schemas/PublicOsImageArch"
+              },
+              "is_official": {
+                "description": "If OsImage is an official template",
+                "type": "boolean"
+              },
+              "is_beta": {
+                "description": "If OsImage is a beta version",
+                "type": "boolean"
+              },
+              "os_version": {
+                "type": "object",
+                "required": [
+                  "os_version",
+                  "sdk_version"
+                ],
+                "properties": {
+                  "os_version": {
+                    "description": "Os Version version",
+                    "type": "string"
+                  },
+                  "sdk_version": {
+                    "description": "SDK API level",
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          },
+          "name": {
+            "description": "Recipe name",
+            "type": "string"
+          },
+          "is_official": {
+            "description": "If Recipe is an official template",
+            "type": "boolean"
+          },
+          "owner": {
+            "$ref": "#/components/schemas/PublicUserWithOrga"
+          },
+          "description": {
+            "description": "Recipe description",
+            "type": "string"
+          },
+          "created_at": {
+            "$ref": "#/components/schemas/Date"
+          },
+          "updated_at": {
+            "$ref": "#/components/schemas/Date"
+          },
+          "status": {
+            "description": "Recipe OS Image status",
+            "type": "string",
+            "enum": [
+              "CREATING",
+              "READY",
+              "UPDATING",
+              "ERROR"
+            ]
+          },
+          "share": {
+            "$ref": "#/components/schemas/PublicMinimalShare"
+          }
+        }
+      },
+      "PublicPatternsRecipesList": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "description": "Number of total Recipes results"
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicPatternsRecipeListResult"
+            },
+            "description": "List of Recipes"
+          }
+        }
+      },
+      "UsageReport": {
+        "type": "object",
+        "properties": {
+          "user_uuid": {
+            "type": "string",
+            "format": "uuid",
+            "description": "The user's uuid."
+          },
+          "email": {
+            "type": "string",
+            "description": "The user's email.\n\nThis field will be empty if the user no longer exists in the system.\n"
+          },
+          "instance_count": {
+            "type": "integer",
+            "description": "Number of devices the user has launched for the given period."
+          },
+          "duration_seconds": {
+            "type": "integer",
+            "description": "Total duration, in seconds, of the user's device sessions for the given period."
+          }
+        }
+      },
+      "UsageReportList": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "description": "Number of users in the report."
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UsageReport"
+            }
+          }
+        }
+      },
+      "PublicUser": {
+        "type": "object",
+        "description": "User profile",
+        "properties": {
+          "created_at": {
+            "description": "User creation date (UNIX timestamp)",
+            "type": "integer"
+          },
+          "email": {
+            "description": "User email address",
+            "type": "string",
+            "format": "email"
+          },
+          "first_name": {
+            "description": "User first name",
+            "type": "string"
+          },
+          "is_enabled": {
+            "description": "Whether the user can connect to the platform or not",
+            "type": "boolean"
+          },
+          "is_organization_manager": {
+            "description": "Whether the user has manager access in the organization or not",
+            "type": "boolean"
+          },
+          "is_validated": {
+            "description": "Whether the user has validated the email address or not",
+            "type": "boolean"
+          },
+          "last_name": {
+            "description": "User last name",
+            "type": "string"
+          },
+          "role": {
+            "description": "User role",
+            "type": "string",
+            "enum": [
+              "USER"
+            ]
+          },
+          "uuid": {
+            "description": "User uuid",
+            "type": "string",
+            "format": "uuid"
+          },
+          "groups": {
+            "type": "array",
+            "items": {
+              "properties": {
+                "uuid": {
+                  "type": "string",
+                  "format": "uuid",
+                  "description": "Group uuid"
+                },
+                "name": {
+                  "description": "Group name",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "PublicMinimalUser": {
+        "type": "object",
+        "description": "Minimal user profile",
+        "properties": {
+          "uuid": {
+            "$ref": "#/components/schemas/Uuidv4"
+          },
+          "email": {
+            "$ref": "#/components/schemas/Email"
+          },
+          "first_name": {
+            "description": "User first name",
+            "type": "string"
+          },
+          "last_name": {
+            "description": "User last name",
+            "type": "string"
+          },
+          "group": {
+            "type": "object",
+            "description": "Group of the User. May be absent if the user has no group",
+            "properties": {
+              "uuid": {
+                "$ref": "#/components/schemas/Uuidv4"
+              }
+            }
+          },
+          "organization": {
+            "type": "object",
+            "description": "Organization",
+            "properties": {
+              "uuid": {
+                "$ref": "#/components/schemas/Uuidv4"
+              }
+            }
+          }
+        }
+      },
+      "PublicFullUser": {
+        "type": "object",
+        "description": "Full user profile",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/PublicUser"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "front_preferences": {
+                "description": "Key/value store for user interface preferences such as pagination, table headers, reminders, etc.",
+                "type": "object"
+              },
+              "tnc_accepted": {
+                "description": "True if the user has accepted the current Terms and Conditions, false otherwise.",
+                "type": "boolean"
+              }
+            }
+          }
+        ]
+      },
+      "PublicOrganization": {
+        "type": "object",
+        "description": "Organization",
+        "properties": {
+          "uuid": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Organization uuid"
+          },
+          "name": {
+            "description": "Organization name",
+            "type": "string"
+          },
+          "description": {
+            "description": "Organization description",
+            "type": "string"
+          },
+          "managers": {
+            "description": "Organization manager list",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Email"
+            }
+          },
+          "store_logcat": {
+            "type": "boolean"
+          },
+          "billing_contact": {
+            "$ref": "#/components/schemas/OptionalEmail"
+          },
+          "instance_inactivity_timeout_minute": {
+            "type": "integer",
+            "description": "Instance inactivity timeout, in minutes",
+            "minimum": 0,
+            "maximum": 28800
+          },
+          "vat_number": {
+            "type": "string"
+          },
+          "preferences": {
+            "type": "object",
+            "description": "Various organization-wide preferences",
+            "properties": {
+              "timeouts": {
+                "type": "object",
+                "description": "Default timeouts for instances",
+                "properties": {
+                  "global": {
+                    "type": "integer",
+                    "description": "Instance global timeout, in minutes",
+                    "minimum": 0,
+                    "maximum": 28800
+                  },
+                  "inactivity": {
+                    "type": "integer",
+                    "description": "Instance inactivity timeout, in minutes",
+                    "minimum": 0,
+                    "maximum": 28800
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "PublicGroup": {
+        "type": "object",
+        "description": "Group",
+        "required": [
+          "uuid",
+          "name",
+          "description",
+          "is_default"
+        ],
+        "properties": {
+          "uuid": {
+            "$ref": "#/components/schemas/Uuidv4"
+          },
+          "parent_uuid": {
+            "$ref": "#/components/schemas/NullableUuidv4"
+          },
+          "name": {
+            "description": "Group name",
+            "type": "string"
+          },
+          "description": {
+            "description": "Group decription",
+            "type": "string"
+          },
+          "is_default": {
+            "description": "Whether or not the group is the default one for the organization",
+            "type": "boolean"
+          }
+        }
+      },
+      "PublicInstance": {
+        "type": "object",
+        "properties": {
+          "uuid": {
+            "$ref": "#/components/schemas/Uuidv4"
+          },
+          "name": {
+            "description": "Instance name",
+            "type": "string"
+          },
+          "owner_uuid": {
+            "$ref": "#/components/schemas/Uuidv4"
+          },
+          "organization_uuid": {
+            "$ref": "#/components/schemas/Uuidv4"
+          },
+          "hardware_profile": {
+            "type": "object",
+            "description": "Data of the Hardware Profile used to start the instance",
+            "properties": {
+              "uuid": {
+                "allOf": [
+                  {
+                    "description": "Uuid of the HardwareProfile used to start the Instance."
+                  },
+                  {
+                    "$ref": "#/components/schemas/Uuidv4"
+                  }
+                ]
+              },
+              "name": {
+                "description": "Name of the HardwareProfile used to start the instance",
+                "type": "string"
+              },
+              "is_official": {
+                "description": "If Hardware Profile is an official template",
+                "type": "boolean"
+              },
+              "form_factor": {
+                "description": "Form factor of the HardwareProfile used to start the instance",
+                "type": "string"
+              },
+              "cpu_count": {
+                "description": "Cpu count attribute of the HardwareProfile used to start the instance",
+                "type": "integer"
+              },
+              "ram_size": {
+                "description": "Ram size attribute of the HardwareProfile used to start the instance",
+                "type": "integer"
+              },
+              "data_disk_size": {
+                "description": "Data disk size attribute of the HardwareProfile used to start the instance",
+                "type": "integer"
+              },
+              "width": {
+                "description": "Width attribute of the Display of the HardwareProfile used to start the instance",
+                "type": "integer"
+              },
+              "height": {
+                "description": "Height attribute of the Display of the HardwareProfile used to start the instance",
+                "type": "integer"
+              },
+              "density": {
+                "description": "Density attribute of the Display of the HardwareProfile used to start the instance",
+                "type": "integer"
+              },
+              "hw_navigation_keys": {
+                "description": "hw_navigation_keys attribute of the DisplaySettings of the HardwareProfile used to start the instance",
+                "type": "boolean"
+              }
+            }
+          },
+          "os_image": {
+            "type": "object",
+            "description": "Data of the OS Image used to start the instance",
+            "properties": {
+              "uuid": {
+                "allOf": [
+                  {
+                    "description": "Uuid of the OsImage used to start the Instance."
+                  },
+                  {
+                    "$ref": "#/components/schemas/Uuidv4"
+                  }
+                ]
+              },
+              "name": {
+                "description": "Name of the OS Image used to start the instance",
+                "type": "string"
+              },
+              "is_official": {
+                "description": "If OsImage is an official template",
+                "type": "boolean"
+              },
+              "image_version": {
+                "description": "Image version attribute of the OsImage used to start the instance",
+                "type": "string"
+              },
+              "arch": {
+                "description": "The architecture of the os image",
+                "type": "string",
+                "enum": [
+                  "x86",
+                  "x86_64",
+                  "arm64"
+                ]
+              },
+              "is_beta": {
+                "description": "If OsImage is a beta version",
+                "type": "boolean"
+              },
+              "build_date": {
+                "allOf": [
+                  {
+                    "description": "Build date attribute of the OsImage used to start the instance"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ShortDate"
+                  }
+                ]
+              },
+              "os_version": {
+                "type": "object",
+                "description": "Data of the Os Version used to start the instance",
+                "properties": {
+                  "uuid": {
+                    "allOf": [
+                      {
+                        "description": "Uuid of the OsVersion of the OsImage used to start the Instance."
+                      },
+                      {
+                        "$ref": "#/components/schemas/Uuidv4"
+                      }
+                    ]
+                  },
+                  "sdk_version": {
+                    "description": "SDK API level",
+                    "type": "integer"
+                  },
+                  "os_version": {
+                    "description": "Os Version version",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "state": {
+            "description": "Instance state",
+            "type": "string",
+            "enum": [
+              "CREATING",
+              "OFFLINE",
+              "STARTING",
+              "BOOTING",
+              "ONLINE",
+              "SAVING",
+              "SAVED",
+              "STOPPING",
+              "DELETING",
+              "RECYCLED",
+              "ERROR",
+              "REVOKED",
+              "EXPIRED"
+            ]
+          },
+          "streamer_fqdn": {
+            "description": "Streamer FQDN",
+            "type": "string"
+          },
+          "turn_fqdn": {
+            "description": "TURN server FQDN",
+            "type": "string"
+          },
+          "adb_url": {
+            "description": "Instance ADB websocket URL",
+            "type": "string"
+          },
+          "file_upload_url": {
+            "description": "Instance file upload websocket URL",
+            "type": "string"
+          },
+          "webrtc_url": {
+            "description": "Instance WebRTC websocket URL",
+            "type": "string"
+          },
+          "recipe_uuid": {
+            "$ref": "#/components/schemas/Uuidv4"
+          },
+          "created_at": {
+            "$ref": "#/components/schemas/Date"
+          },
+          "updated_at": {
+            "$ref": "#/components/schemas/Date"
+          },
+          "timeout": {
+            "description": "Deprecated. Use timeouts.inactivity instead.",
+            "type": "integer"
+          },
+          "timeouts": {
+            "type": "object",
+            "description": "Various customizable timeouts for the Instance.\n",
+            "properties": {
+              "global": {
+                "type": "integer",
+                "description": "Duration after which the Instance will be stopped, no matter what. The countdown starts when the Instance goes into ONLINE/RUNNING state for the first time.\n"
+              },
+              "inactivity": {
+                "type": "integer",
+                "description": "Duration after which the Instance will be stopped when no connection is done on the webapp.\n"
+              }
+            }
+          }
+        }
+      },
+      "PublicLicense": {
+        "type": "object",
+        "description": "License",
+        "properties": {
+          "expiration": {
+            "description": "License expiration date",
+            "type": "string",
+            "format": "date"
+          },
+          "type": {
+            "description": "License type",
+            "type": "string",
+            "enum": [
+              "pending",
+              "metered",
+              "fixed"
+            ]
+          },
+          "instances": {
+            "type": "object",
+            "description": "Instance related information",
+            "properties": {
+              "max": {
+                "description": "Maximum number of concurrent virtual devices",
+                "type": "number"
+              },
+              "zone": {
+                "description": "Zone on which virtual devices will be started",
+                "type": "string",
+                "enum": [
+                  "europe",
+                  "north america",
+                  "southeast asia"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "PublicRecipe": {
+        "type": "object",
+        "properties": {
+          "uuid": {
+            "$ref": "#/components/schemas/Uuidv4"
+          },
+          "name": {
+            "description": "Recipe name",
+            "type": "string"
+          },
+          "source": {
+            "description": "Recipe source",
+            "type": "string",
+            "enum": [
+              "genymotion",
+              "shared"
+            ]
+          },
+          "owner_uuid": {
+            "$ref": "#/components/schemas/Uuidv4"
+          },
+          "status": {
+            "description": "Recipe status",
+            "type": "string",
+            "enum": [
+              "ready",
+              "creating",
+              "updating"
+            ]
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicRecipeItem"
+            }
+          },
+          "created_at": {
+            "$ref": "#/components/schemas/Date"
+          },
+          "updated_at": {
+            "$ref": "#/components/schemas/Date"
+          }
+        }
+      },
+      "PublicRecipeV2": {
+        "type": "object",
+        "properties": {
+          "uuid": {
+            "$ref": "#/components/schemas/Uuidv4"
+          },
+          "name": {
+            "description": "Recipe name",
+            "type": "string"
+          },
+          "source": {
+            "description": "Recipe source",
+            "type": "string",
+            "enum": [
+              "official",
+              "owner",
+              "sharee"
+            ]
+          },
+          "status": {
+            "description": "Recipe status",
+            "type": "string",
+            "enum": [
+              "ready",
+              "updating"
+            ]
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicRecipeItem"
+            }
+          },
+          "created_at": {
+            "$ref": "#/components/schemas/Date"
+          },
+          "updated_at": {
+            "$ref": "#/components/schemas/Date"
+          }
+        }
+      },
+      "PublicRecipeItem": {
+        "type": "object",
+        "discriminator": {
+          "propertyName": "type"
+        },
+        "properties": {
+          "uuid": {
+            "$ref": "#/components/schemas/Uuidv4"
+          },
+          "name": {
+            "description": "Recipe Item name",
+            "type": "string"
+          },
+          "type": {
+            "description": "Recipe Item type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "uuid",
+          "name",
+          "type"
+        ]
+      },
+      "ova": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/PublicRecipeItem"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "object",
+                "properties": {
+                  "android_version": {
+                    "description": "Android version string",
+                    "type": "string"
+                  },
+                  "api_level": {
+                    "description": "Android API level",
+                    "type": "integer"
+                  },
+                  "genymotion_version": {
+                    "description": "Genymotion version string",
+                    "type": "string"
+                  },
+                  "filename": {
+                    "description": "File name",
+                    "type": "string"
+                  },
+                  "hash": {
+                    "description": "File sha1sum",
+                    "type": "string"
+                  },
+                  "size": {
+                    "description": "File size, in bytes",
+                    "type": "integer"
+                  },
+                  "upgrade_status": {
+                    "description": "Recipe upgrade status",
+                    "type": "string"
+                  },
+                  "android_platform": {
+                    "description": "Type of system",
+                    "type": "string",
+                    "enum": [
+                      "p",
+                      "t",
+                      "tp"
+                    ]
+                  },
+                  "is_official": {
+                    "description": "If the ova is provided by Genymotion",
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "apk": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/PublicRecipeItem"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "object",
+                "properties": {
+                  "filename": {
+                    "description": "File name",
+                    "type": "string"
+                  },
+                  "icon": {
+                    "description": "APK icon name",
+                    "type": "string"
+                  },
+                  "icon_url": {
+                    "description": "APK icon URL",
+                    "type": "string"
+                  },
+                  "min_sdk_version": {
+                    "description": "Min Android API level",
+                    "type": "integer"
+                  },
+                  "target_sdk_version": {
+                    "description": "Targeted Android API level",
+                    "type": "integer"
+                  },
+                  "max_sdk_version": {
+                    "description": "Max Android API level",
+                    "type": "integer"
+                  },
+                  "size": {
+                    "description": "File size, in bytes",
+                    "type": "integer"
+                  },
+                  "version": {
+                    "description": "Application version string",
+                    "type": "string"
+                  },
+                  "name": {
+                    "description": "Application name",
+                    "type": "string"
+                  },
+                  "supported_abis": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "x86",
+                        "x86_64",
+                        "armeabi",
+                        "armeabi-v7a",
+                        "arm64-v8a",
+                        "mips",
+                        "mips64"
+                      ]
+                    }
+                  },
+                  "package_name": {
+                    "description": "Application package name",
+                    "type": "string"
+                  },
+                  "main_activity": {
+                    "description": "Application main activity",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "navbar": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/PublicRecipeItem"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "object",
+                "properties": {
+                  "enabled": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "camera": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/PublicRecipeItem"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "object",
+                "properties": {
+                  "enabled": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "gyro": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/PublicRecipeItem"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "object",
+                "properties": {
+                  "enabled": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "description": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/PublicRecipeItem"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "object",
+                "properties": {
+                  "value": {
+                    "description": "Recipe description",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "processor": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/PublicRecipeItem"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "object",
+                "properties": {
+                  "number": {
+                    "description": "Number of CPU",
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "datadisk": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/PublicRecipeItem"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "object",
+                "properties": {
+                  "size": {
+                    "description": "Size of the data disk, in MB",
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "date": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/PublicRecipeItem"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "object",
+                "properties": {
+                  "date": {
+                    "description": "OVA creation date",
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "memory": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/PublicRecipeItem"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "object",
+                "properties": {
+                  "size": {
+                    "description": "Quantity of RAM, in MB",
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "screen": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/PublicRecipeItem"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "object",
+                "properties": {
+                  "width": {
+                    "description": "Width of the screen, in pixels",
+                    "type": "integer"
+                  },
+                  "height": {
+                    "description": "Height of the screen, in pixels",
+                    "type": "integer"
+                  },
+                  "density": {
+                    "description": "Density of the screen, in DPI",
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "PublicOrganizationWithLicense": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/PublicOrganization"
+          },
+          {
+            "type": "object",
+            "description": "Organization information",
+            "properties": {
+              "license": {
+                "$ref": "#/components/schemas/PublicLicense"
+              }
+            }
+          }
+        ]
+      },
+      "PublicUserWithOrga": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/PublicUser"
+          },
+          {
+            "type": "object",
+            "description": "User information",
+            "properties": {
+              "organization": {
+                "$ref": "#/components/schemas/PublicOrganization"
+              }
+            }
+          }
+        ]
+      },
+      "PublicFullUserWithOrga": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/PublicFullUser"
+          },
+          {
+            "type": "object",
+            "description": "Full user information",
+            "properties": {
+              "organization": {
+                "$ref": "#/components/schemas/PublicOrganization"
+              }
+            }
+          }
+        ]
+      },
+      "PublicUserWithOrgaAndLicense": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/PublicUser"
+          },
+          {
+            "type": "object",
+            "description": "User information",
+            "properties": {
+              "organization": {
+                "$ref": "#/components/schemas/PublicOrganizationWithLicense"
+              }
+            }
+          }
+        ]
+      },
+      "PublicUserProfile": {
+        "$ref": "#/components/schemas/PublicUserWithOrgaAndLicense"
+      },
+      "PublicInstanceWithOwnerAndRecipe": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/PublicInstance"
+          },
+          {
+            "type": "object",
+            "description": "Instance with owner and recipe information",
+            "properties": {
+              "recipe": {
+                "$ref": "#/components/schemas/PublicRecipeWithOwner"
+              },
+              "owner": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PublicUserWithOrga"
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "group": {
+                        "description": "Deprecated. Group of the User. Will always be absent.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/PublicGroup"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "PublicRecipeWithOwner": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/PublicRecipe"
+          },
+          {
+            "type": "object",
+            "description": "Recipe with owner information",
+            "properties": {
+              "owner": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/PublicUserWithOrga"
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "group": {
+                        "description": "Deprecated. Group of the User. Will always be absent.",
+                        "allOf": [
+                          {
+                            "$ref": "#/components/schemas/PublicGroup"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "PublicShare": {
+        "type": "object",
+        "properties": {
+          "uuid": {
+            "$ref": "#/components/schemas/Uuidv4"
+          },
+          "sharer_uuid": {
+            "$ref": "#/components/schemas/Uuidv4"
+          },
+          "sharer": {
+            "$ref": "#/components/schemas/PublicMinimalUser"
+          },
+          "recipients": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicShareRecipient"
+            }
+          }
+        }
+      },
+      "PublicShareRecipient": {
+        "type": "object",
+        "discriminator": {
+          "propertyName": "type"
+        },
+        "properties": {
+          "uuid": {
+            "$ref": "#/components/schemas/Uuidv4"
+          },
+          "type": {
+            "description": "Recipient type",
+            "type": "string",
+            "enum": [
+              "user",
+              "organization"
+            ]
+          }
+        }
+      },
+      "PublicFullRecipe": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/PublicRecipeV2"
+          },
+          {
+            "type": "object",
+            "description": "Recipe with owner information",
+            "properties": {
+              "owner": {
+                "$ref": "#/components/schemas/PublicMinimalUser"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "description": "Share with sharer & recipients information",
+            "properties": {
+              "share": {
+                "$ref": "#/components/schemas/PublicShare"
+              }
+            }
+          }
+        ]
+      },
+      "InstanceAccessToken": {
+        "type": "object",
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "description": "A token to be used for connecting to an instance."
+          }
+        }
+      },
+      "user": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/PublicShareRecipient"
+          },
+          {
+            "$ref": "#/components/schemas/PublicMinimalUser"
+          }
+        ]
+      },
+      "organization": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/PublicShareRecipient"
+          }
+        ]
+      },
+      "GenericError": {
+        "type": "object",
+        "required": [
+          "code",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "Email": {
+        "description": "Email address",
+        "type": "string",
+        "format": "email"
+      },
+      "OptionalEmail": {
+        "description": "Optional email address",
+        "type": "string",
+        "pattern": "^$|^(([^<>()\\[\\]\\\\.,;:\\s@\"]+(\\.[^<>()\\[\\]\\\\.,;:\\s@\"]+)*)|(\".+\"))@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}])|(([a-zA-Z\\-0-9]+\\.)+[a-zA-Z]{2,}))$"
+      },
+      "Uuidv4": {
+        "description": "Resource unique identifier",
+        "type": "string",
+        "format": "uuid",
+        "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+      },
+      "NullableUuidv4": {
+        "description": "Resource unique identifier",
+        "format": "uuid",
+        "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+        "nullable": true,
+        "type": "string"
+      },
+      "Date": {
+        "description": "Date & time",
+        "type": "string",
+        "pattern": "^(\\d{4})-(\\d){2}-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})\\.(\\d{3})Z$"
+      },
+      "ResultSet": {
+        "type": "object",
+        "required": [
+          "count",
+          "results"
+        ],
+        "properties": {
+          "count": {
+            "type": "integer",
+            "description": "Total number of results"
+          },
+          "next": {
+            "type": "string",
+            "description": "Next page URL, if available"
+          },
+          "previous": {
+            "type": "string",
+            "description": "Previous page URL, if available"
+          },
+          "results": {
+            "type": "array",
+            "description": "Collection items",
+            "items": {
+              "type": "object"
+            }
+          }
+        }
+      },
+      "ShortDate": {
+        "description": "Date",
+        "type": "string",
+        "pattern": "^(\\d{4})-(\\d){2}-(\\d{2})$"
+      },
+      "ListInstancesSuccess": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/PublicInstance"
+        }
+      },
+      "PublicCpuCount": {
+        "description": "Hardware Profile Cpu count",
+        "type": "integer",
+        "enum": [
+          1,
+          2,
+          4,
+          8
+        ]
+      },
+      "PublicRamSize": {
+        "description": "Hardware Profile RAM size in Mb",
+        "type": "integer",
+        "enum": [
+          1024,
+          2048,
+          3072,
+          4096,
+          6144,
+          8192
+        ]
+      },
+      "NullableShortDate": {
+        "description": "Date",
+        "pattern": "^(\\d{4})-(\\d){2}-(\\d{2})$",
+        "nullable": true,
+        "type": "string"
+      }
+    }
+  }
+}

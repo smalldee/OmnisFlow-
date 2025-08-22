@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <title>Simulace Továrny</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; background: #f0f4f8; }
+    h1 { color: #004080; }
+    button { font-size: 16px; padding: 10px 20px; margin: 10px 0; cursor: pointer; }
+    #balance { font-weight: bold; font-size: 18px; color: #006600; }
+    #essenceSection { margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h1>Vaše Továrna Inteligence</h1>
+  <button id="startFactoryBtn">Spustit Továrnu</button>
+  <div id="factoryStatus" style="margin-top: 15px; font-style: italic; color: #555;"></div>
+
+  <div id="essenceSection" style="display:none;">
+    <h2>Naše Krypto Peněženka: Průzkum Kryptosítí a Vize Proroka</h2>
+    <button id="collectEssenceBtn">Zahájit sběr esence (prachu) pro výzkum ✨</button>
+    <p>Vizionářský Zůstatek v Peněžence: <span id="balance">0</span> jednotek</p>
+  </div>
+
+  <script>
+    const startBtn = document.getElementById('startFactoryBtn');
+    const factoryStatus = document.getElementById('factoryStatus');
+    const essenceSection = document.getElementById('essenceSection');
+    const collectBtn = document.getElementById('collectEssenceBtn');
+    const balanceSpan = document.getElementById('balance');
+
+    let factoryRunning = false;
+    let balance = 0;
+
+    startBtn.addEventListener('click', () => {
+      if (!factoryRunning) {
+        factoryRunning = true;
+        factoryStatus.textContent = 'Továrna je spuštěna a produkuje inteligenci...';
+        essenceSection.style.display = 'block';
+        startBtn.disabled = true;
+      }
+    });
+
+    collectBtn.addEventListener('click', () => {
+      if (factoryRunning) {
+        balance += 1; // každý klik přidá 1 jednotku esence
+        balanceSpan.textContent = balance;
+      }
+    });
+  </script>
+</body>
+</html>
+
+
+#tovarna.html
