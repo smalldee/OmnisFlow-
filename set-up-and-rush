@@ -1,0 +1,450 @@
+#!/usr/bin/env bash 
+set -e
+
+echo "== OmnisFlow auto-setup =="
+
+ROOT_DIR="OmnisFlow"
+if [ -d "$ROOT_DIR" ]; then
+  echo "Složka $ROOT_DIR už existuje."
+else
+  mkdir -p "$ROOT_DIR"
+fi
+
+cd "$ROOT_DIR"
+
+# --- adresáře ---
+mkdir -p backend frontend/src/pages frontend/src/components frontend/public/models smart-contract docs
+
+# --- backend/requirements.txt ---
+cat > backend/requirements.txt << 'EOF'
+flask
+flask-cors
+web3
+python-dotenv
+EOF
+
+# --- backend/.env.example ---
+cat > backend/.env.example << 'EOF'
+WEB3_PROVIDER=https://polygon-rpc.com
+REWARD_WALLET_PK=TVUJ_PRIVATNI_KLIC
+TOKEN_CONTRACT=0xTVUJ_TOKEN_ADDRESS
+EOF
+
+# --- backend/ai_sentinel.py ---
+cat > backend/ai_sentinel.py << 'EOF'
+def detect_real_positivity(features):
+    genuine_patterns = ['genuine', 'authentic', 'natural']
+    smile_strength = features.get('smile_strength', 0)
+    microexpression_pattern = features.get('microexpression_pattern', '')
+    if smile_strength > 0.75 and microexpression_pattern in genuine_patterns:
+        return True
+    return False
+EOF
+
+# --- backend/token_rewards.py (s ABI placeholderem) ---
+cat > backend/token_rewards.py << 'EOF'
+from web3 import Web3
+import os
+
+WEB3_PROVIDER = os.getenv("WEB3_PROVIDER")
+PRIVATE_KEY = os.getenv("REWARD_WALLET_PK")
+TOKEN_CONTRACT = os.getenv("TOKEN_CONTRACT")
+
+w3 = Web3(Web3.HTTPProvider(WEB3_PROVIDER))
+
+# Nahraď tímto polem ABI z artifacts OmniToken.json (klíč "abi")
+ABI = [
+  # TODO: vlož ABI pole z Hardhat artifacts
+]
+
+contract = w3.eth.contract(address=Web3.to_checksum_address(TOKEN_CONTRACT), abi=ABI)
+
+def send_reward(user_wallet, amount):
+    sender = w3.eth.account.from_key(PRIVATE_KEY).address
+    nonce = w3.eth.get_transaction_count(sender)
+    if w3.eth.chain_id is None:
+        # fallback (Polygon mainnet)
+        chain_id = 137
+    else:
+        chain_id = w3.eth.chain_id
+    tx = contract.functions.transfer(Web3.to_checksum_address(user_wallet), int(amount * 1e18)).build_transaction({
+        "from": sender,
+        "chainId": chain_id,
+        "gas": 120000,
+        "maxFeePerGas": w3.to_wei("60", "gwei"),
+        "maxPriorityFeePerGas": w3.to_wei("2", "gwei"),
+        "nonce": nonce
+    })
+    signed = w3.eth.account.sign_transaction(tx, private_key=PRIVATE_KEY)
+    tx_hash = w3.eth.send_raw_transaction(signed.rawTransaction)
+    return w3.to_hex(tx_hash)
+EOF
+
+# --- backend/app.py ---
+cat > backend/app.py << 'EOF'
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+from ai_sentinel import detect_real_positivity
+from token_rewards import send_reward
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+app = Flask(__name__)
+CORS(app)
+
+@app.route('/api/positivity', methods=['POST'])
+def check_positivity():
+    data = request.json or {}
+    features = data.get('features', {})
+    wallet = data.get('wallet')
+    if not wallet:
+        return jsonify({"error": "Wallet address is required"}), 400
+    if detect_real_positivity(features):
+        try:
+            tx_hash = send_reward(wallet, 0.05)
+            return jsonify({"genuine": True, "tx_hash": tx_hash})
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+    return jsonify({"genuine": False})
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=8000)
+EOF
+
+# --- frontend/package.json ---
+cat > frontend/package.json << 'EOF'
+{
+  "name": "omnisflow",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 3000",
+    "build": "next build",
+    "start": "next start -p 3000"
+  },
+  "dependencies": {
+    "face-api.js": "^0.22.2",
+    "next": "14.2.3",
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
+  }
+}
+EOF
+
+# --- frontend/next.config.js ---
+cat > frontend/next.config.js << 'EOF'
+/** @type {import('next').NextConfig} */
+const nextConfig = { reactStrictMode: true };
+module.exports = nextConfig;
+EOF
+
+# --- frontend/src/pages/index.tsx ---
+cat > frontend/src/pages/index.tsx << 'EOF'
+import Link from "next/link";
+
+export default function Home() {
+  return (
+    <main style={{ padding: 24, fontFamily: "sans-serif" }}>
+      <h1>OmnisFlow Dashboard</h1>
+      <p>Vítej v OmnisFlow. Pro odměny za autentickou pozitivitu přejdi do Consent-to-Earn.</p>
+      <Link href="/consent-to-earn">➡ Consent & Earn</Link>
+      <hr style={{ margin: "16px 0" }} />
+      <p>Backend: http://localhost:8000 • Frontend: http://localhost:3000</p>
+    </main>
+  );
+}
+EOF
+
+# --- frontend/src/pages/consent-to-earn.tsx ---
+cat > frontend/src/pages/consent-to-earn.tsx << 'EOF'
+import ConsentEarn from "../components/ConsentEarn";
+
+export default function ConsentToEarnPage() {
+  return (
+    <main style={{ padding: 24, fontFamily: "sans-serif" }}>
+      <h2>Consent & Earn – aktivuj kameru a vydělávej</h2>
+      <ConsentEarn />
+    </main>
+  );
+}
+EOF
+
+# --- frontend/src/components/ConsentEarn.tsx ---
+cat > frontend/src/components/ConsentEarn.tsx << 'EOF'
+import { useEffect, useRef, useState } from "react";
+import * as faceapi from "face-api.js";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000";
+
+export default function ConsentEarn() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [wallet, setWallet] = useState("");
+  const [earning, setEarning] = useState(0);
+  const [status, setStatus] = useState("Připravuje se kamera…");
+  const [modelsLoaded, setModelsLoaded] = useState(false);
+
+  useEffect(() => {
+    const loadModels = async () => {
+      await faceapi.nets.tinyFaceDetector.loadFromUri("/models");
+      await faceapi.nets.faceExpressionNet.loadFromUri("/models");
+      setModelsLoaded(true);
+    };
+    loadModels().then(startVideo);
+  }, []);
+
+  const startVideo = () => {
+    navigator.mediaDevices
+      .getUserMedia({ video: true })
+      .then((stream) => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          setStatus("Kamera připravena. Klikni na Analyzovat.");
+        }
+      })
+      .catch(() => setStatus("Nelze načíst kameru – povol prosím přístup."));
+  };
+
+  const analyze = async () => {
+    if (!modelsLoaded) { setStatus("Modely se ještě načítají…"); return; }
+    if (!videoRef.current) return;
+    if (!wallet) { setStatus("Zadej adresu peněženky (EVM)."); return; }
+
+    const detection = await faceapi
+      .detectSingleFace(videoRef.current, new faceapi.TinyFaceDetectorOptions())
+      .withFaceExpressions();
+
+    if (!detection) { setStatus("Obličej nerozpoznán – zkus lepší světlo."); return; }
+
+    const smile_strength = detection.expressions.happy || 0;
+    const features = {
+      smile_strength,
+      microexpression_pattern: smile_strength > 0.8 ? "genuine" : "fake"
+    };
+
+    try {
+      const res = await fetch(`${API_BASE}/api/positivity`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ features, wallet })
+      });
+      const data = await res.json();
+      if (data.genuine) {
+        setEarning((e) => e + 0.05);
+        setStatus(\`✅ Odměna připsána • Tx: \${data.tx_hash}\`);
+      } else if (data.error) {
+        setStatus(\`Chyba: \${data.error}\`);
+      } else {
+        setStatus("❌ Autentická pozitivita nebyla potvrzena.");
+      }
+    } catch {
+      setStatus("Chyba komunikace s API.");
+    }
+  };
+
+  return (
+    <section>
+      <div style={{ marginBottom: 12 }}>
+        <input
+          type="text"
+          placeholder="EVM adresa peněženky (0x…)"
+          value={wallet}
+          onChange={(e) => setWallet(e.target.value)}
+          style={{ width: 360, padding: 8 }}
+        />
+      </div>
+      <video
+        ref={videoRef}
+        autoPlay
+        muted
+        width={360}
+        height={270}
+        style={{ border: "1px solid #ccc", borderRadius: 6 }}
+      />
+      <div style={{ marginTop: 12 }}>
+        <button onClick={analyze} style={{ padding: "8px 16px" }}>
+          Analyzovat & získat odměnu
+        </button>
+      </div>
+      <p style={{ marginTop: 12 }}>Odměna: {earning.toFixed(2)} OMNI</p>
+      <p style={{ color: "#555" }}>{status}</p>
+      <small>Pozn.: Snímání probíhá lokálně v prohlížeči, na server posíláme jen anonymní rysy.</small>
+    </section>
+  );
+}
+EOF
+
+# --- smart-contract files ---
+cat > smart-contract/package.json << 'EOF'
+{
+  "name": "omni-token",
+  "private": true,
+  "scripts": {
+    "compile": "hardhat compile",
+    "deploy:local": "hardhat run deploy.js --network localhost",
+    "deploy:polygon": "hardhat run deploy.js --network polygon"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "dotenv": "^16.4.5",
+    "hardhat": "^2.22.10"
+  }
+}
+EOF
+
+cat > smart-contract/hardhat.config.js << 'EOF'
+require("dotenv").config();
+require("@nomicfoundation/hardhat-toolbox");
+
+const { POLYGON_RPC, PRIVATE_KEY } = process.env;
+
+/** @type import('hardhat/config').HardhatUserConfig */
+module.exports = {
+  solidity: "0.8.21",
+  networks: {
+    localhost: { url: "http://127.0.0.1:8545" },
+    polygon: {
+      url: POLYGON_RPC || "https://polygon-rpc.com",
+      accounts: PRIVATE_KEY ? [PRIVATE_KEY] : []
+    }
+  }
+};
+EOF
+
+cat > smart-contract/.env.example << 'EOF'
+POLYGON_RPC=https://polygon-rpc.com
+PRIVATE_KEY=TVUJ_PRIVATNI_KLIC
+EOF
+
+cat > smart-contract/OmniToken.sol << 'EOF'
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.21;
+
+contract OmniToken {
+    string public name = "OmniToken";
+    string public symbol = "OMNI";
+    uint8 public decimals = 18;
+    uint256 public totalSupply;
+
+    mapping(address => uint256) public balanceOf;
+
+    event Transfer(address indexed from, address indexed to, uint256 value);
+
+    constructor(uint256 initialSupply) {
+        totalSupply = initialSupply * (10 ** decimals);
+        balanceOf[msg.sender] = totalSupply;
+        emit Transfer(address(0), msg.sender, totalSupply);
+    }
+
+    function transfer(address to, uint256 value) external returns (bool) {
+        require(balanceOf[msg.sender] >= value, "Nedostatek tokenu");
+        balanceOf[msg.sender] -= value;
+        balanceOf[to] += value;
+        emit Transfer(msg.sender, to, value);
+        return true;
+    }
+}
+EOF
+
+cat > smart-contract/deploy.js << 'EOF'
+const hre = require("hardhat");
+
+async function main() {
+  const initialSupply = 1_000_000;
+  const Token = await hre.ethers.getContractFactory("OmniToken");
+  const token = await Token.deploy(initialSupply);
+  await token.waitForDeployment();
+  const address = await token.getAddress();
+  console.log("OmniToken nasazen na:", address);
+}
+
+main().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});
+EOF
+
+# --- docs ---
+cat > docs/NDA_OmnisFlow.txt << 'EOF'
+Dohoda o mlčenlivosti (NDA)
+Poskytovatel: Šimon Jelínek, nar. 2.12.1999, Jablonec nad Nisou, firma OmnisOS-flow, [adresa], [IČ], e-mail: [email]
+Příjemce: [jméno/název], [adresa]
+
+1) Účel: Posouzení spolupráce/investice/akvizice projektu OmnisFlow.
+2) Důvěrné informace: veškerý kód, dokumentace, obchodní plány, atd.
+3) Povinnosti: mlčenlivost, nepředání třetím osobám, nepoužití mimo účel.
+4) Doba: 5 let od podpisu.
+5) Smluvní pokuta: 100 000 Kč za porušení, + náhrada škody.
+6) Právo: Česká republika.
+
+Datum: __________
+Podpis poskytovatele: __________
+Podpis příjemce: __________
+EOF
+
+cat > docs/License_OmnisFlow.txt << 'EOF'
+Licenční smlouva – OmnisFlow (test/demo)
+Poskytovatel: Šimon Jelínek, OmnisOS-flow, [adresa], [IČ], e-mail: [email]
+Nabyvatel: [jméno/název], [adresa]
+
+1) Nevýhradní, nepřenosná licence pro interní testování a hodnocení.
+2) Omezení: bez úprav, bez komerčního využití, bez předání třetím osobám.
+3) Vlastnictví: veškerá práva zůstávají poskytovateli.
+4) Doba: 90 dní od podpisu, pokud není dohodnuto jinak.
+5) Ukončení: porušením podmínek licence okamžité zrušení bez nároku na vrácení úhrady.
+
+Datum: __________
+Podpis poskytovatele: __________
+Podpis nabyvatele: __________
+EOF
+
+# --- README ---
+cat > README.md << 'EOF'
+# OmnisFlow – Full Stack (AI Sentinel + Consent-to-Earn + OMNI token)
+
+Autor: Šimon Jelínek (OmnisOS-flow)
+
+## Rychlý start
+1) Nasazení smart kontraktu (Polygon):
+   - cd smart-contract
+   - cp .env.example .env a doplň POLYGON_RPC a PRIVATE_KEY
+   - npm i
+   - npm run compile
+   - npm run deploy:polygon
+   - poznamenej si adresu kontraktu a ABI (artifacts/.../OmniToken.json -> abi)
+
+2) Backend:
+   - cd ../backend
+   - cp .env.example .env a doplň WEB3_PROVIDER, REWARD_WALLET_PK, TOKEN_CONTRACT
+   - Vlož ABI do backend/token_rewards.py (pole ABI)
+   - pip install -r requirements.txt
+   - python app.py
+
+3) Frontend:
+   - cd ../frontend
+   - npm i
+   - stáhni FaceAPI modely do public/models
+   - npm run dev
+   - otevři http://localhost:3000/consent-to-earn
+
+## Bezpečnost a právo
+- Nikdy neukládej privátní klíče do repozitáře.
+- Sdílej pouze pod NDA (viz docs/NDA_OmnisFlow.txt).
+- Test/demo licence v docs/License_OmnisFlow.txt.
+
+EOF
+
+echo "== Instalace závislostí =="
+# Smart-contract deps
+( cd smart-contract && npm i ) || true
+# Frontend deps
+( cd frontend && npm i ) || true
+# Backend deps
+python3 -m pip install -r backend/requirements.txt
+
+echo "== Hotovo =="
+echo "1) Nasad token ve smart-contract/"
+echo "2) Doplň backend/.env a ABI do backend/token_rewards.py"
+echo "3) Spusť backend: python backend/app.py"
+echo "4) Spusť frontend: npm --prefix frontend run dev"
+echo "5) Otevři http://localhost:3000/consent-to-earn"
