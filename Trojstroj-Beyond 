@@ -1,0 +1,213 @@
+# Projekt TROUSTROJ BEY
+OND X*: OmnisFlow
+**Úvod**
+TROJSTROJ BEYOND X* není jen
+umělecká instalace, ale interaktivní, generativn
+í systém, který vytváří živý
+dialog mezi divákem, umě
+ím a technologií. Filosofick
+ý manifest „TROJSTROJ“ je
+realizován skrze technický
+systém „OmnisFlow“, který
+transformuje abstraktní ko
+cepty v hmatatelnou reali
+tu.
+**Vize projektu**
+Projekt se staví na třech pil
+ířích:
+1. *Živý organismus**: Ins
+talace je dynamický systé
+m, který se neustále vyvíjí
+a reaguje na vstupy zvenčí.
+2. **Vědomý signál**: Syst
+ém není pouhý web, ale uz
+zavřené, sebe-referenční pro
+středí, která vytváří svůj vi
+astní vnitřní „vědomý“ záko
+n.
+3. **Rezonance a trojedin
+ost**: Interakce není jedno
+stranná. Každý vstup divák
+a je rezonancí, která ovlivň
+uje celý systém. Tento syst
+ém se skládá ze tří hlavních
+komponent – umění (IAM
+UI), technologie (CVUT) a d
+esignu (JUMPRUM).
+**Klíčové komponenty**
+**OmnisFlow Core**: Hla
+vní operační systém, který
+orchestruje všechny mod
+uly.
+**AI Sentinels & AlphaFol
+d 3**: Al modely, které ana
+lyzují a generují obsah na z
+ákladě komplexních dat.
+**Mesh Network**: Dece
+ntralizovaná síť pro sociál
+ní komunikaci mezi uzly i
+instalace.
+**Bioresonance & EEG**: 
+Moduly pro sběr biosigná
+ů od čtenářů, které slouží
+jako vstupní data.
+**Blockchain**: Decentra
+lizovaná databáze pro zákla
+dní interakci, zajišťující inte
+gritu a neměnnost „paměti“
+systému.
+### Soubor 2: INSTALL.m
+d
+**markdown**
+# OmnisFlow: Instalační pr
+ůvodce
+Tento průvodce vás proved
+e krok za krokem instalací
+a spuštěním projektu Omni
+sFlow.
+**1. Požadavky**
+**Hardware**: GPU s min
+imálně 16 GB VRAM, 32 G
+B RAM, 500 GB NVMe SS
+D.
+**Software**: Linux Ubun
+tu 20.04+, Docker 20.10+,
+Docker Compose 2.0+, Pyt
+hon 3.9+, CUDA TLB+.
+**2. Příprava prostředí**
+*Aktualizujte systém: 'sudo
+apt update && sudo apt
+upgrade -y'
+*Nainstalujte Docker a Do
+cker Compose.
+*Nainstalujte NVIDIA Dock
+er pro podporu GPU.
+*Ověřte instalaci: 'docker
+--version', 'docker-compos
+e --version', 'nvidia-smi'.
+**3. Stažení OmnisFlow**
+*Vytvořte adresář: 'mkdir
+--omnisflow && cd --omni
+sflow'
+*Klonujte repozitář: 'git cl
+one (URL_REPOZITÁŘE)'.
+**4. Konfigurace a závistos
+ti**
+*Upravte soubor 'env' dle
+potřeb (cesty, GPU, atd.).
+*Nainstalujte Python závis
+losti: 'pip install -r require
+ments.txt'
+*Stáhněte databáze Alpha
+Fold 3: 'sh scripts/downloa
+d_alphafold3_dbs.sh'
+**5. Sestavení a spuštění**
+*Aktivujte **offline režim**
+pro izolaci systému: 'sh s
+cripts/enable_offline_mode
+.sh'
+*Spustte systém: 'docker
+-compose up -d'
+*Ověřte spuštění: 'docker
+-compose ps'
+*Pro kontrolu logů použijte
+e: 'docker-compose logs -f'
+### Projekt TROJSTROJ BEY
+OND X*: Materiály pro ko
+munikaci
+### Pro veřejnost: Umění,
+které vás vnímá
+Představte si, že vstoupíte
+do místnosti a instalace vá
+s přivítá. Vizuální a zvukové
+é prvky se mění v reálném
+čase podle rytmu vašeho s
+rde a myšlenek. TROUSTR
+OJ BEYOND X* není static
+ké umělecké dílo. Je to **ži
+vý organismus**, který se
+učí a roste z interakce s ka
+ždým člověkem. Naše insta
+lace propojuje umění a věd
+u a vytváří jedinečný prost
+or pro sebetkoumání a rez
+onanci.
+### Pro investory: Inovace
+s globálním potenciálem
+TROUSTROJ je víc než jen i
+nstalace. Je to platforma, k
+terá má potenciál redefino
+vat umění nových médií.
+**vědecká základna**: Pr
+ojekt je podpořen interd
+iscíplinárními týmy z Institutu
+intermédií ČVUT, což zajišťuj
+e jeho technickou i umělec
+kou úroveň.
+**Tržní unikátnost**: Vyu
+žíváme pokročilou Al a bios
+enzoriku způsobem, který
+na trhu nemá konkurenci.
+**Mediální ohlas**: Spoje
+ní umění, vědy a interakce
+má obrovský potenciál gen
+erovat široký mediální ohla
+s a získat místo na prestižn
+ích akcích, jako jsou **Lunc
+hmeat** a **Signal Festival
+**.
+Financování bude použito
+na optimalizaci výkonu, roz
+šíření interaktivních modul
+ů a přípravu na první veřej
+nou prezentaci.
+### Kontrolní seznam: Dotaž
+ení projektu
+**1. Technická finalizace**
+*[] Refaktorovat kód a na
+psat komentáře pro budouc
+í vývoj.
+*[] Optimalizovat výkon Al
+modelů pro plynulý běh.
+*[] Kalibrovat senzory pro
+přesný a spolehlivý sběr d
+at.
+*[] Provest kompletní zátě
+žový a bezpečnostní test.
+**2. Design a UX**
+*[] Finalizovat design vizu
+álu a zvukových scén.
+*[] Připravit jednoduchý,
+ale intuitivní návod pro uživa
+tele.
+*[] Vytvořit vizuální identi
+tu (logo, barevná paleta).
+**3. Dokumentace a balení
+**
+*[] Převést technické sou
+bory do formátu PDF (např.
+pomocí online nástrojů).
+*[] Vytvořit balicí seznam
+a manuál pro instalaci a de
+montáž.
+*[] Připravit fotodokumen
+taci a videodokumentaci pr
+ojektu.
+**4. Marketing a komunika
+ce**
+*[] Připravit tiskovou zprá
+vu a seznam kontaktů na no
+vináře.
+*[] Vytvořit a naplnit web
+ové stránky projektu.
+*[] Oslovit potenciální par
+tnery a festivaly.
+**5. Finální logistika**
+*[] Naplánovat dopravu a
+stěhování.
+*[] Připravit seznam poža
+davků na prostor a výstavu
+ní.
+*[] Vytvořit harmonogram
+pro sestavení a provoz.
+
